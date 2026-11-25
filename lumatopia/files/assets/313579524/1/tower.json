@@ -1,0 +1,54 @@
+{
+  "_about": "The Vinyl Tower's floors, floor 1 first. The same file is the game's tower.json asset (Dancetopia/Scripts): change both. Rules: tower-rules.mjs. goal: grade (lowest), combo (max combo at least), misses (MISSes at most), fullCombo; {} = dance it to the end. reward (first clear only): money (Lumatopia money), vinyls, items [{ kind: furniture | outfit, id (Lumatopia's name), slot (outfit: tops, bottoms, shoes, hairs, outfitHats), label, planned (the piece meant to replace a placeholder) }]. Swapping an item's id later gives the new one to everyone who cleared that floor (at their next beach visit).",
+  "floors": [
+    { "song": "Dreamy_at_Night", "difficulty": "easy", "mode": "tap", "goal": {}, "reward": { "money": 2000 } },
+    { "song": "Dreamy_Skies_Of_a_Lost_Love", "difficulty": "easy", "mode": "tap", "goal": { "grade": "C" }, "reward": { "money": 2500, "vinyls": 1 } },
+    { "song": "After_The_Midnight", "difficulty": "easy", "mode": "tap", "goal": { "grade": "B" }, "reward": { "money": 3000, "items": [
+      { "kind": "outfit", "slot": "outfitHats", "id": "StageIdolCap", "label": "Stage Idol Cap" } ] } },
+    { "song": "City_After_The_Rain", "difficulty": "easy", "mode": "tap", "goal": { "combo": 20 }, "reward": { "money": 3500, "vinyls": 1 } },
+    { "song": "We_Rise_Up", "difficulty": "easy", "mode": "tap", "goal": { "grade": "B" }, "reward": { "money": 4000, "items": [
+      { "kind": "furniture", "id": "NeonNoteLamp", "label": "Neon Note Lamp" } ] } },
+    { "song": "Chiptune", "difficulty": "easy", "mode": "tap", "goal": { "grade": "C" }, "reward": { "money": 4000, "vinyls": 1 } },
+    { "song": "Euphoric_Dance_of_the_Night", "difficulty": "easy", "mode": "tap", "goal": { "grade": "B" }, "reward": { "money": 4500, "items": [
+      { "kind": "outfit", "slot": "tops", "id": "StageIdolTop", "label": "Stage Idol Jacket" } ] } },
+    { "song": "Arbaite", "difficulty": "easy", "mode": "tap", "goal": { "misses": 5 }, "reward": { "money": 4500, "vinyls": 1 } },
+    { "song": "Eurobeat_Night_Drive", "difficulty": "easy", "mode": "tap", "goal": { "grade": "B", "combo": 30 }, "reward": { "money": 5000, "items": [
+      { "kind": "outfit", "slot": "bottoms", "id": "StageIdolBottoms", "label": "Stage Idol Pants" } ] } },
+    { "song": "Dance_Dance_Higher", "difficulty": "easy", "mode": "tap", "goal": { "grade": "A" }, "reward": { "money": 8000, "vinyls": 3, "items": [
+      { "kind": "furniture", "id": "TvStand", "label": "TV Stand", "planned": "DJBooth" } ] } },
+
+    { "song": "Dreamy_at_Night", "difficulty": "hard", "mode": "tap", "goal": { "grade": "B" }, "reward": { "money": 6000, "items": [
+      { "kind": "outfit", "slot": "shoes", "id": "StageIdolShoes", "label": "Stage Idol Shoes" } ] } },
+    { "song": "After_The_Midnight", "difficulty": "hard", "mode": "tap", "goal": { "combo": 30 }, "reward": { "money": 6000, "vinyls": 1 } },
+    { "song": "City_After_The_Rain", "difficulty": "hard", "mode": "tap", "goal": { "grade": "B" }, "reward": { "money": 6500, "items": [
+      { "kind": "outfit", "slot": "outfitHats", "id": "KittyHeadphones", "label": "Kitty Headphones" } ] } },
+    { "song": "Mexe_Mexe_Ate_o_Sol_Nascer", "difficulty": "hard", "mode": "tap", "goal": { "grade": "C" }, "reward": { "money": 6500, "vinyls": 1 } },
+    { "song": "Run_it", "difficulty": "hard", "mode": "tap", "goal": { "grade": "B" }, "reward": { "money": 7000, "items": [
+      { "kind": "outfit", "slot": "tops", "id": "NeonCrewTop", "label": "Neon Crew Jacket" } ] } },
+    { "song": "Chiptune", "difficulty": "hard", "mode": "tap", "goal": { "misses": 10 }, "reward": { "money": 7000, "vinyls": 1 } },
+    { "song": "We_Rise_Up", "difficulty": "hard", "mode": "tap", "goal": { "grade": "A" }, "reward": { "money": 7500, "items": [
+      { "kind": "outfit", "slot": "bottoms", "id": "NeonCrewBottoms", "label": "Neon Crew Pants" } ] } },
+    { "song": "Euphoric_Dance_of_the_Night", "difficulty": "hard", "mode": "tap", "goal": { "combo": 50 }, "reward": { "money": 7500, "vinyls": 1 } },
+    { "song": "Eurobeat_Night_Drive", "difficulty": "hard", "mode": "tap", "goal": { "grade": "A" }, "reward": { "money": 8000, "items": [
+      { "kind": "outfit", "slot": "shoes", "id": "NeonCrewShoes", "label": "Neon Crew Boots" } ] } },
+    { "song": "Dance_Dance_Higher", "difficulty": "hard", "mode": "tap", "goal": { "grade": "A", "misses": 5 }, "reward": { "money": 12000, "vinyls": 3, "items": [
+      { "kind": "furniture", "id": "Summer_FloorLamp", "label": "Summer Floor Lamp", "planned": "DiscoBall" },
+      { "kind": "furniture", "id": "LedDanceRug", "label": "LED Dance Rug" } ] } },
+
+    { "song": "Dreamy_Skies_Of_a_Lost_Love", "difficulty": "easy", "mode": "bar", "goal": {}, "reward": { "money": 9000 } },
+    { "song": "After_The_Midnight", "difficulty": "easy", "mode": "bar", "goal": { "grade": "C" }, "reward": { "money": 9000, "vinyls": 2, "items": [
+      { "kind": "outfit", "slot": "tops", "id": "DiscoVinylTop", "label": "Disco Vinyl Jacket" } ] } },
+    { "song": "City_After_The_Rain", "difficulty": "easy", "mode": "bar", "goal": { "grade": "B" }, "reward": { "money": 9500 } },
+    { "song": "We_Rise_Up", "difficulty": "easy", "mode": "bar", "goal": { "combo": 10 }, "reward": { "money": 9500, "vinyls": 2 } },
+    { "song": "Arbaite", "difficulty": "easy", "mode": "bar", "goal": { "grade": "A" }, "reward": { "money": 10000, "items": [
+      { "kind": "outfit", "slot": "bottoms", "id": "DiscoVinylBottoms", "label": "Disco Vinyl Bell-Bottoms" } ] } },
+    { "song": "Chiptune", "difficulty": "hard", "mode": "bar", "goal": { "grade": "B" }, "reward": { "money": 10500, "vinyls": 2 } },
+    { "song": "Mexe_Mexe_Ate_o_Sol_Nascer", "difficulty": "hard", "mode": "bar", "goal": { "misses": 3 }, "reward": { "money": 11000 } },
+    { "song": "Run_it", "difficulty": "hard", "mode": "bar", "goal": { "grade": "A" }, "reward": { "money": 11500, "vinyls": 2, "items": [
+      { "kind": "outfit", "slot": "shoes", "id": "DiscoVinylBoots", "label": "Disco Vinyl Boots" } ] } },
+    { "song": "Eurobeat_Night_Drive", "difficulty": "hard", "mode": "bar", "goal": { "combo": 15 }, "reward": { "money": 12000 } },
+    { "song": "Dance_Dance_Higher", "difficulty": "hard", "mode": "bar", "goal": { "grade": "S" }, "reward": { "money": 20000, "vinyls": 5, "items": [
+      { "kind": "furniture", "id": "RhythmArcade", "label": "Rhythm Arcade" },
+      { "kind": "furniture", "id": "TrophyShelf", "label": "Trophy Shelf" } ] } }
+  ]
+}

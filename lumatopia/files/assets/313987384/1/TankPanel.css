@@ -1,0 +1,174 @@
+/* Aquarium and terrarium (HomeTanks.js + TankView.js): what is in the tank, in
+   a glass strip, and the player's fish or critters below to put in. The frame,
+   cards, stars and empty text are the backpack's (InventoryPanel.css, --iv
+   units); this file sizes the window and draws the tank. */
+
+.tk-window {
+    position: relative;
+    width: calc(var(--iv) * 900);
+    height: calc(var(--iv) * 760);
+    margin-top: calc(var(--iv) * 50);
+}
+
+.lui-portrait .tk-window {
+    width: calc(var(--iv) * 860);
+    height: calc(var(--iv) * 1200);
+}
+
+/* ---- The tank ---------------------------------------------------------- */
+
+.tk-tank {
+    flex: none;
+    position: relative;
+    margin: calc(var(--iv) * 6) calc(var(--iv) * 40) 0;
+    padding: calc(var(--iv) * 22) calc(var(--iv) * 20) calc(var(--iv) * 30);
+    border-radius: calc(var(--iv) * 34);
+    box-shadow:
+        inset 0 0 0 calc(var(--iv) * 5) rgba(255, 255, 255, 0.85),
+        inset 0 calc(var(--iv) * -10) 0 rgba(0, 0, 0, 0.06),
+        0 calc(var(--iv) * 8) 0 rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+/* Water: aqua, lighter at the top, with sand along the bottom. */
+.tk-tank.is-aquarium {
+    background:
+        linear-gradient(transparent 82%, #f3dca8 82%, #e8c98a),
+        linear-gradient(#bff1f5, #6fd0e4);
+}
+
+/* Moss and soil. */
+.tk-tank.is-terrarium {
+    background:
+        linear-gradient(transparent 80%, #8bbf5a 80%, #6f9f43),
+        linear-gradient(#f2fbe6, #cfeab0);
+}
+
+/* A glass glint across the top left. */
+.tk-tank::before {
+    content: '';
+    position: absolute;
+    left: calc(var(--iv) * 30);
+    top: calc(var(--iv) * 14);
+    width: 22%;
+    height: calc(var(--iv) * 12);
+    border-radius: calc(var(--iv) * 6);
+    background: rgba(255, 255, 255, 0.7);
+    pointer-events: none;
+}
+
+.tk-spots {
+    position: relative;
+    display: flex;
+    justify-content: space-around;
+    gap: calc(var(--iv) * 14);
+    z-index: 1;
+}
+
+.tk-spot {
+    position: relative;
+    flex: none;
+    width: calc(var(--iv) * 130);
+    height: calc(var(--iv) * 130);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.35);
+    box-shadow: inset 0 0 0 calc(var(--iv) * 4) rgba(255, 255, 255, 0.75);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s;
+}
+
+.tk-spot.is-filled {
+    background: rgba(255, 255, 255, 0.55);
+    cursor: pointer;
+}
+
+.tk-spot.is-filled:active {
+    transform: scale(0.94);
+}
+
+.tk-spot-icon {
+    position: absolute;
+    inset: 8%;
+    background-repeat: no-repeat;
+}
+
+.tk-spot-icon.is-landing {
+    animation: tk-land 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes tk-land {
+    0% { transform: translateY(-40%) scale(0.6); opacity: 0; }
+    100% { transform: none; opacity: 1; }
+}
+
+.tk-spot-stars {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(var(--iv) * -10);
+    justify-content: center;
+}
+
+.tk-spot-take {
+    position: absolute;
+    top: calc(var(--iv) * -10);
+    right: calc(var(--iv) * -10);
+    width: max(24px, calc(var(--iv) * 52));
+    height: max(24px, calc(var(--iv) * 52));
+    border-radius: 50%;
+    background: #ff8fc4;
+    box-shadow: inset 0 0 0 calc(var(--iv) * 4) #ffffff, 0 calc(var(--iv) * 4) 0 #e0679f;
+    z-index: 2;
+}
+
+.tk-spot-take::before,
+.tk-spot-take::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 52%;
+    height: 14%;
+    border-radius: calc(var(--iv) * 4);
+    background: #ffffff;
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.tk-spot-take::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.tk-hint {
+    flex: none;
+    margin-top: calc(var(--iv) * 14);
+    color: var(--iv-ink-soft);
+    font-size: max(12px, calc(var(--iv) * 28));
+    text-align: center;
+}
+
+/* Why the last tap did nothing (the tank or the backpack is full). */
+.tk-hint.is-note {
+    color: #e0679f;
+}
+
+/* ---- The backpack's fish or critters ------------------------------------ */
+
+.tk-main {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.tk-grid {
+    grid-template-columns: repeat(6, 1fr);
+}
+
+.lui-portrait .tk-grid {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+/* The tank is full: the cards rest. */
+.tk-item.is-disabled {
+    opacity: 0.55;
+}

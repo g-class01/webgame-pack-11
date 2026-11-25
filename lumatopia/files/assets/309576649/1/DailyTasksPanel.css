@@ -1,0 +1,334 @@
+/* Daily Tasks panel (DailyTasksPanel.js + DailyTasksView.js).
+   Sizes are in panel units: calc(var(--dt) * N). --dt is chosen so the
+   whole window, with the title bar and close button that hang outside it,
+   fills the screen, so the panel is as large as the screen allows.
+   Landscape puts each task on one line (task, rewards, claim); portrait
+   gives it two. Font sizes carry a pixel floor so phones never get text
+   smaller than that. Colours are the ones of the authored panel: the bars
+   and rows are its yellow pill sprite under the authored tints. */
+
+.dt-overlay {
+    --dt: min(
+        calc((var(--view-w, 100vw) - 24px) / 1088),
+        calc((var(--view-h, 100vh) - 24px) / 834)
+    );
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(20, 12, 28, 0.45);
+    pointer-events: auto;
+    touch-action: none;
+}
+
+.lui-portrait .dt-overlay {
+    --dt: min(
+        calc((var(--view-w, 100vw) - 24px) / 948),
+        calc((var(--view-h, 100vh) - 24px) / 1124)
+    );
+}
+
+.dt-window {
+    position: relative;
+    width: calc(var(--dt) * 1000);
+    height: calc(var(--dt) * 790);
+    margin-top: calc(var(--dt) * 44);
+}
+
+.lui-portrait .dt-window {
+    width: calc(var(--dt) * 860);
+    height: calc(var(--dt) * 1080);
+}
+
+/* ---- Frame ---------------------------------------------------------- */
+
+.dt-panel {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--dt) * 18);
+    padding: calc(var(--dt) * 62) calc(var(--dt) * 40) calc(var(--dt) * 32);
+    border-radius: calc(var(--dt) * 44);
+    background: #fdf2e0;
+    border: calc(var(--dt) * 7) solid #fee5bb;
+    box-shadow:
+        0 0 0 calc(var(--dt) * 1.5) #dca76e,
+        inset 0 0 0 calc(var(--dt) * 2.5) #f2a830,
+        0 calc(var(--dt) * 10) calc(var(--dt) * 30) rgba(40, 20, 50, 0.35);
+}
+
+.dt-title {
+    position: absolute;
+    left: 50%;
+    top: calc(var(--dt) * -44);
+    width: calc(var(--dt) * 470);
+    height: calc(var(--dt) * 88);
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-size: 100% 100%;
+}
+
+.dt-title-text {
+    --outline: #cc4d00;
+    --outline-width: max(1px, calc(var(--dt) * 3.5));
+    color: #ffcc4d;
+    font-size: max(16px, calc(var(--dt) * 44));
+    letter-spacing: calc(var(--dt) * 1);
+    white-space: nowrap;
+}
+
+.dt-close {
+    position: absolute;
+    top: calc(var(--dt) * -44);
+    right: calc(var(--dt) * -44);
+    width: max(40px, calc(var(--dt) * 112));
+    height: max(40px, calc(var(--dt) * 112));
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 3;
+}
+
+.dt-hint {
+    --outline: #993300;
+    --outline-width: max(1px, calc(var(--dt) * 2.5));
+    color: #ffb399;
+    font-size: max(13px, calc(var(--dt) * 32));
+    line-height: 1.15;
+    text-align: center;
+}
+
+/* ---- Today's progress ----------------------------------------------- */
+
+.dt-top {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--dt) * 20);
+    padding: 0 calc(var(--dt) * 30);
+}
+
+.dt-top-bar {
+    position: relative;
+    flex: 1;
+    height: calc(var(--dt) * 42);
+    border-radius: calc(var(--dt) * 21);
+    background: #b08032;
+    box-shadow: inset 0 0 0 calc(var(--dt) * 3) #ae7025;
+    overflow: hidden;
+}
+
+.dt-top-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    border-radius: calc(var(--dt) * 21);
+    background: #4cd525;
+    box-shadow: inset 0 0 0 calc(var(--dt) * 3) #4aba1c, inset 0 calc(var(--dt) * 6) 0 rgba(255, 255, 255, 0.25);
+    transition: width 0.5s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+
+.dt-top-text {
+    flex: none;
+    min-width: 3em;
+    color: #cc4d00;
+    font-size: max(14px, calc(var(--dt) * 38));
+    text-align: right;
+}
+
+/* ---- Tasks ---------------------------------------------------------- */
+
+.dt-list {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--dt) * 12);
+    padding: calc(var(--dt) * 4);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    scrollbar-width: thin;
+    scrollbar-color: #f2b860 transparent;
+}
+
+.dt-row {
+    /* Rows share out any spare height, so the list always fills the panel. */
+    flex: 1 0 auto;
+    display: grid;
+    grid-template-columns: 1fr calc(var(--dt) * 170) calc(var(--dt) * 210);
+    grid-template-areas:
+        "title rewards action"
+        "bar   rewards action";
+    align-items: center;
+    column-gap: calc(var(--dt) * 18);
+    row-gap: calc(var(--dt) * 6);
+    min-height: calc(var(--dt) * 92);
+    padding: calc(var(--dt) * 10) calc(var(--dt) * 16) calc(var(--dt) * 10) calc(var(--dt) * 26);
+    border-radius: calc(var(--dt) * 22);
+    background: #fcd57c;
+    box-shadow: inset 0 0 0 calc(var(--dt) * 3) #f8ba5d;
+}
+
+.dt-row-title {
+    grid-area: title;
+    align-self: end;
+    color: #804d1a;
+    font-size: max(13px, calc(var(--dt) * 32));
+    line-height: 1.1;
+}
+
+.dt-row-bar {
+    grid-area: bar;
+    align-self: start;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--dt) * 14);
+}
+
+.dt-row-track {
+    position: relative;
+    flex: 1;
+    height: calc(var(--dt) * 22);
+    border-radius: calc(var(--dt) * 11);
+    background: #ca954a;
+    box-shadow: inset 0 0 0 calc(var(--dt) * 2) #c6824a;
+    overflow: hidden;
+}
+
+.dt-row-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    border-radius: calc(var(--dt) * 11);
+    background: #fcaa25;
+    box-shadow: inset 0 calc(var(--dt) * 4) 0 rgba(255, 255, 255, 0.3);
+    transition: width 0.5s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+
+.dt-row-progress {
+    flex: none;
+    min-width: 3.4em;
+    color: #804d1a;
+    font-size: max(12px, calc(var(--dt) * 26));
+}
+
+.dt-rewards {
+    grid-area: rewards;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--dt) * 2);
+}
+
+.dt-reward {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--dt) * 10);
+}
+
+.dt-reward-icon {
+    flex: none;
+    width: calc(var(--dt) * 34);
+    height: calc(var(--dt) * 34);
+}
+
+.dt-reward-icon-lumina {
+    width: calc(var(--dt) * 30);
+    height: calc(var(--dt) * 30);
+    margin: 0 calc(var(--dt) * 2);
+}
+
+.dt-reward-text {
+    color: #804d1a;
+    font-size: max(12px, calc(var(--dt) * 28));
+    white-space: nowrap;
+}
+
+.dt-action {
+    grid-area: action;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dt-claim {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* The claim art is 308 x 85; the box keeps that shape. */
+    width: calc(var(--dt) * 200);
+    height: calc(var(--dt) * 55.19);
+    padding-bottom: calc(var(--dt) * 4);
+    background-size: 100% 100%;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s;
+}
+
+/* Not finished yet: the button shows, faded, as authored. */
+.dt-claim:disabled {
+    opacity: 0.45;
+}
+
+.dt-claim-text {
+    --outline: #336619;
+    --outline-width: max(1px, calc(var(--dt) * 2.5));
+    color: #fff;
+    font-size: max(13px, calc(var(--dt) * 30));
+    white-space: nowrap;
+}
+
+.dt-check {
+    width: calc(var(--dt) * 60);
+    height: calc(var(--dt) * 60);
+    animation: dt-check-in 0.45s cubic-bezier(0.34, 1.8, 0.64, 1) both;
+}
+
+@keyframes dt-check-in {
+    from { opacity: 0; transform: scale(0.2) rotate(-25deg); }
+}
+
+/* ---- Portrait: each task on two lines -------------------------------- */
+
+.lui-portrait .dt-row {
+    grid-template-columns: 1fr calc(var(--dt) * 230);
+    grid-template-areas:
+        "title rewards"
+        "bar   action";
+    row-gap: calc(var(--dt) * 12);
+    min-height: calc(var(--dt) * 150);
+    padding: calc(var(--dt) * 16) calc(var(--dt) * 18) calc(var(--dt) * 16) calc(var(--dt) * 26);
+}
+
+.lui-portrait .dt-row-title { font-size: max(14px, calc(var(--dt) * 40)); align-self: center; }
+.lui-portrait .dt-row-progress { font-size: max(12px, calc(var(--dt) * 32)); }
+.lui-portrait .dt-row-bar { align-self: center; }
+.lui-portrait .dt-row-track { height: calc(var(--dt) * 26); }
+.lui-portrait .dt-rewards { flex-direction: row; justify-content: flex-end; gap: calc(var(--dt) * 16); }
+.lui-portrait .dt-reward-text { font-size: max(12px, calc(var(--dt) * 32)); }
+.lui-portrait .dt-claim { width: calc(var(--dt) * 220); height: calc(var(--dt) * 60.71); }
+.lui-portrait .dt-claim-text { font-size: max(13px, calc(var(--dt) * 34)); }
+.lui-portrait .dt-hint { font-size: max(13px, calc(var(--dt) * 36)); }
+
+/* ---- Hover and press --------------------------------------------------
+   Same feel as the other panels: a soft spring up under the mouse, a quick
+   squash when pressed, hover only where there is a real pointer. */
+
+@media (hover: hover) {
+    .dt-close:hover { transform: scale(1.15); }
+    .dt-claim:not(:disabled):hover { transform: scale(1.1); }
+}
+
+.dt-close:active,
+.dt-claim:not(:disabled):active {
+    transition-duration: 0.1s;
+}
+
+.dt-close:active { transform: scale(0.88); }
+.dt-claim:not(:disabled):active { transform: scale(0.9); }

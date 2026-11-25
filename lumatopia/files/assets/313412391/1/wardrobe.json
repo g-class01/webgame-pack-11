@@ -1,0 +1,724 @@
+{
+ "_about": "Dancetopia's wardrobe: every piece a player can wear, what it costs, and the look a new player starts in ('start'; 'presets': the looks a new player picks from as the game opens, all free pieces). One file for both sides: the server's copy (server/dancetopia/wardrobe.json) decides prices and ownership, the game's copy (the wardrobe.json asset) draws the wardrobe. Change both. A piece's id is the name of its mesh under the dancer model (the same names as Lumatopia's), except where 'meshes' lists others (shoes are a left and a right). No price = free for everyone; 'coins' or 'vinyls' = bought once. 'tower' = won in the Vinyl Tower (on the Lumatopia beach it's owned through Lumatopia's wardrobe; never sold).",
+ "slots": [
+  "hair",
+  "hat",
+  "top",
+  "bottom",
+  "shoes"
+ ],
+ "items": {
+  "hair": [
+   {
+    "id": "Hair1"
+   },
+   {
+    "id": "Hair2"
+   },
+   {
+    "id": "Hair3"
+   },
+   {
+    "id": "Hair4"
+   },
+   {
+    "id": "Hair5"
+   },
+   {
+    "id": "Hair6"
+   },
+   {
+    "id": "Hair7"
+   },
+   {
+    "id": "Hair11"
+   },
+   {
+    "id": "Hair8",
+    "coins": 600
+   },
+   {
+    "id": "Hair9",
+    "coins": 600
+   },
+   {
+    "id": "Hair10",
+    "coins": 600
+   },
+   {
+    "id": "Hair12",
+    "coins": 600
+   },
+   {
+    "id": "Hair13",
+    "coins": 600
+   },
+   {
+    "id": "Hair14",
+    "coins": 600
+   },
+   {
+    "id": "SoftGrundBob",
+    "vinyls": 13
+   },
+   {
+    "id": "MummyHair",
+    "vinyls": 13
+   }
+  ],
+  "hat": [
+   {
+    "id": ""
+   },
+   {
+    "id": "Cap"
+   },
+   {
+    "id": "Beenie"
+   },
+   {
+    "id": "SnowHat"
+   },
+   {
+    "id": "StorybookHat"
+   },
+   {
+    "id": "SummerHat"
+   },
+   {
+    "id": "Sunglasses"
+   },
+   {
+    "id": "GigachadSunglasses",
+    "coins": 600
+   },
+   {
+    "id": "MidnightHat",
+    "vinyls": 15
+   },
+   {
+    "id": "VampireHat",
+    "vinyls": 15
+   },
+   {
+    "id": "VampireCountessHeadwear",
+    "vinyls": 15
+   },
+   {
+    "id": "VampirePrincessHeadwear",
+    "vinyls": 15
+   },
+   {
+    "id": "StageIdolCap",
+    "tower": true
+   },
+   {
+    "id": "KittyHeadphones",
+    "tower": true
+   }
+  ],
+  "top": [
+   {
+    "id": "BlackCatSweater"
+   },
+   {
+    "id": "Top1"
+   },
+   {
+    "id": "PlainShirt"
+   },
+   {
+    "id": "Top2"
+   },
+   {
+    "id": "Top3"
+   },
+   {
+    "id": "Top4"
+   },
+   {
+    "id": "Top5"
+   },
+   {
+    "id": "Top6"
+   },
+   {
+    "id": "Top7"
+   },
+   {
+    "id": "Top8"
+   },
+   {
+    "id": "FrozenDress"
+   },
+   {
+    "id": "StorybookDress"
+   },
+   {
+    "id": "SummerDress"
+   },
+   {
+    "id": "Top15"
+   },
+   {
+    "id": "67Top"
+   },
+   {
+    "id": "GigachadTop"
+   },
+   {
+    "id": "NpcTop"
+   },
+   {
+    "id": "Top11",
+    "coins": 900
+   },
+   {
+    "id": "Top12",
+    "coins": 900
+   },
+   {
+    "id": "Top13",
+    "coins": 900
+   },
+   {
+    "id": "Top14",
+    "coins": 900
+   },
+   {
+    "id": "OrangePuffer",
+    "coins": 900
+   },
+   {
+    "id": "MoggedTop",
+    "coins": 900
+   },
+   {
+    "id": "CookTop",
+    "coins": 900
+   },
+   {
+    "id": "AuraTop",
+    "coins": 900
+   },
+   {
+    "id": "DoubleJeanJacket",
+    "vinyls": 20
+   },
+   {
+    "id": "ExoticTigerShirt",
+    "vinyls": 20
+   },
+   {
+    "id": "MummySweater",
+    "vinyls": 20
+   },
+   {
+    "id": "LadybugDress",
+    "vinyls": 20
+   },
+   {
+    "id": "BumblebeeCostume",
+    "vinyls": 20
+   },
+   {
+    "id": "FishCostume",
+    "vinyls": 20
+   },
+   {
+    "id": "BirdCostume",
+    "vinyls": 20
+   },
+   {
+    "id": "VampireMaleTop",
+    "vinyls": 25
+   },
+   {
+    "id": "VampireCountessTop",
+    "vinyls": 25
+   },
+   {
+    "id": "VampirePrincessTop",
+    "vinyls": 25
+   },
+   {
+    "id": "StageIdolTop",
+    "tower": true
+   },
+   {
+    "id": "NeonCrewTop",
+    "tower": true
+   },
+   {
+    "id": "DiscoVinylTop",
+    "tower": true
+   }
+  ],
+  "bottom": [
+   {
+    "id": "Paradox Hybrid Denim"
+   },
+   {
+    "id": "Pants"
+   },
+   {
+    "id": "Pants2"
+   },
+   {
+    "id": "Pants3"
+   },
+   {
+    "id": "Pants4"
+   },
+   {
+    "id": "Shorts"
+   },
+   {
+    "id": "Shorts2"
+   },
+   {
+    "id": "Skirt"
+   },
+   {
+    "id": "Skirt2"
+   },
+   {
+    "id": "FrozenPants"
+   },
+   {
+    "id": "BeachShorts"
+   },
+   {
+    "id": "StoryBookShorts"
+   },
+   {
+    "id": "67Shorts"
+   },
+   {
+    "id": "PufferBottoms"
+   },
+   {
+    "id": "BaggyJeans",
+    "coins": 900
+   },
+   {
+    "id": "SkateParkBottom",
+    "coins": 900
+   },
+   {
+    "id": "AuraBottoms",
+    "coins": 900
+   },
+   {
+    "id": "MoggedBottom",
+    "coins": 900
+   },
+   {
+    "id": "MummyPants",
+    "vinyls": 18
+   },
+   {
+    "id": "MonsterPants",
+    "vinyls": 18
+   },
+   {
+    "id": "VampireCountessSkirt",
+    "vinyls": 20
+   },
+   {
+    "id": "VampirePrincessSkirt",
+    "vinyls": 20
+   },
+   {
+    "id": "VampirePants",
+    "vinyls": 20
+   },
+   {
+    "id": "MidnightCapeBottom",
+    "vinyls": 20
+   },
+   {
+    "id": "StageIdolBottoms",
+    "tower": true
+   },
+   {
+    "id": "NeonCrewBottoms",
+    "tower": true
+   },
+   {
+    "id": "DiscoVinylBottoms",
+    "tower": true
+   }
+  ],
+  "shoes": [
+   {
+    "id": "SummerShoes"
+   },
+   {
+    "id": "Shoe1"
+   },
+   {
+    "id": "Shoe2"
+   },
+   {
+    "id": "Shoe3"
+   },
+   {
+    "id": "Shoe4"
+   },
+   {
+    "id": "Shoe5"
+   },
+   {
+    "id": "Shoe6"
+   },
+   {
+    "id": "FrozenBoots"
+   },
+   {
+    "id": "StorybookBoots"
+   },
+   {
+    "id": "67Sneakers"
+   },
+   {
+    "id": "MilkyHiTops",
+    "coins": 750
+   },
+   {
+    "id": "PufferShoes",
+    "coins": 750
+   },
+   {
+    "id": "AuraShoes",
+    "coins": 750
+   },
+   {
+    "id": "BlackStomper",
+    "vinyls": 15
+   },
+   {
+    "id": "PinkFuzzyStomper",
+    "vinyls": 15
+   },
+   {
+    "id": "MummySneakers",
+    "vinyls": 15
+   },
+   {
+    "id": "MonsterBoots",
+    "vinyls": 15
+   },
+   {
+    "id": "LadybugShoes",
+    "vinyls": 15
+   },
+   {
+    "id": "BumblebeeShoes",
+    "vinyls": 15
+   },
+   {
+    "id": "FishBoots",
+    "vinyls": 15
+   },
+   {
+    "id": "BirdBoots",
+    "vinyls": 15
+   },
+   {
+    "id": "VampireCountessBoots",
+    "vinyls": 15
+   },
+   {
+    "id": "VampirePrincessShoes",
+    "vinyls": 15
+   },
+   {
+    "id": "VampireShoes",
+    "vinyls": 15
+   },
+   {
+    "id": "NeonCrewShoes",
+    "tower": true
+   },
+   {
+    "id": "DiscoVinylBoots",
+    "tower": true
+   },
+   {
+    "id": "StageIdolShoes",
+    "tower": true
+   }
+  ]
+ },
+ "meshes": {
+  "Shoe1": [
+   "Shoe1Left",
+   "Shoe1Right"
+  ],
+  "Shoe2": [
+   "Shoe2Left",
+   "Shoe2Right"
+  ],
+  "Shoe3": [
+   "Shoe3Left",
+   "Shoe3Right"
+  ],
+  "Shoe4": [
+   "Shoe4Left",
+   "Shoe4Right"
+  ],
+  "Shoe5": [
+   "Shoe5Left",
+   "Shoe5Right"
+  ],
+  "Shoe6": [
+   "Shoe6Left",
+   "Shoe6Right"
+  ],
+  "FrozenBoots": [
+   "FrozenBootsL",
+   "FrozenBootsR"
+  ],
+  "StorybookBoots": [
+   "StorybookBootsLeft",
+   "StorybookBootsRight"
+  ],
+  "BlackStomper": [
+   "BlackStomperLeft",
+   "BlackStomperRight"
+  ],
+  "PinkFuzzyStomper": [
+   "PinkFuzzyStomperLeft",
+   "PinkFuzzyStomperRight"
+  ],
+  "MummySneakers": [
+   "MummySneakersLeft",
+   "MummySneakersRight"
+  ],
+  "MonsterBoots": [
+   "MonsterBootsLeft",
+   "MonsterBootsRight"
+  ],
+  "MilkyHiTops": [
+   "MilkyHiTopsLeft",
+   "MilkyHiTopsRight"
+  ],
+  "LadybugShoes": [
+   "LadybugShoeLeft",
+   "LadybugShoeRight"
+  ],
+  "BumblebeeShoes": [
+   "BumblebeeShoeLeft",
+   "BumblebeeShoeRight"
+  ],
+  "FishBoots": [
+   "FishBootsLeft",
+   "FishBootsRight"
+  ],
+  "BirdBoots": [
+   "BirdBootsLeft",
+   "BirdBootsRight"
+  ],
+  "VampireCountessBoots": [
+   "VampireCountessBootsLeft",
+   "VampireCountessBootsRight"
+  ],
+  "VampirePrincessShoes": [
+   "VampirePrincessShoesLeft",
+   "VampirePrincessShoesRight"
+  ],
+  "VampireShoes": [
+   "VampireShoesLeft",
+   "VampireShoesRight"
+  ],
+  "PufferShoes": [
+   "PufferShoesLeft",
+   "PufferShoesRight"
+  ],
+  "AuraShoes": [
+   "AuraShoesLeft",
+   "AuraShoesRight"
+  ],
+  "SummerShoes": [
+   "SummerShoesLeft",
+   "SummerShoesRight"
+  ],
+  "67Sneakers": [
+   "67SneakersLeft",
+   "67SneakersRight"
+  ],
+  "NeonCrewShoes": [
+   "NeonCrewShoesLeft",
+   "NeonCrewShoesRight"
+  ],
+  "DiscoVinylBoots": [
+   "DiscoVinylBootsLeft",
+   "DiscoVinylBootsRight"
+  ],
+  "StageIdolShoes": [
+   "StageIdolShoesLeft",
+   "StageIdolShoesRight"
+  ]
+ },
+ "covers": {
+  "FrozenDress": [
+   "bottom"
+  ],
+  "StorybookDress": [
+   "bottom"
+  ],
+  "SummerDress": [
+   "bottom"
+  ],
+  "LadybugDress": [
+   "bottom"
+  ],
+  "BumblebeeCostume": [
+   "bottom"
+  ],
+  "FishCostume": [
+   "bottom",
+   "hat",
+   "hair"
+  ],
+  "BirdCostume": [
+   "bottom",
+   "hat",
+   "hair"
+  ]
+ },
+ "untintedHair": [
+  "MummyHair"
+ ],
+ "faces": [
+  {
+   "offset": [
+    0.0595,
+    -0.3
+   ]
+  },
+  {
+   "offset": [
+    0.395,
+    -0.3
+   ]
+  },
+  {
+   "offset": [
+    0.72,
+    -0.3
+   ]
+  },
+  {
+   "offset": [
+    0.055,
+    -0.63
+   ]
+  },
+  {
+   "offset": [
+    0.395,
+    -0.63
+   ]
+  },
+  {
+   "offset": [
+    0.72,
+    -0.63
+   ]
+  },
+  {
+   "offset": [
+    0.055,
+    -0.97
+   ]
+  },
+  {
+   "offset": [
+    0.39,
+    -0.97
+   ]
+  },
+  {
+   "offset": [
+    0.73,
+    -0.97
+   ]
+  },
+  {
+   "offset": [
+    0.16667,
+    0.13333
+   ],
+   "tiling": 0.66667,
+   "texture": "JesterFace.png",
+   "closedTexture": "JesterFaceClosed.png",
+   "vinyls": 10
+  }
+ ],
+ "skinTones": [
+  "#FFD2B4",
+  "#FFE4D2",
+  "#EDB98F",
+  "#D0976A",
+  "#A56C47",
+  "#6F462F",
+  "#917CAE"
+ ],
+ "skinToneOrder": [
+  1,
+  0,
+  2,
+  3,
+  4,
+  5,
+  6
+ ],
+ "hairColors": [
+  "#2A2A2A",
+  "#5A3A2A",
+  "#8A4B2A",
+  "#C9773A",
+  "#FFD98C",
+  "#F2E6D8",
+  "#FF8FC8",
+  "#C9A3FF",
+  "#7FD8FF",
+  "#8EF0C0",
+  "#FF5A6E",
+  "#B8C0D8"
+ ],
+ "start": {
+  "hair": "Hair11",
+  "hat": "",
+  "top": "BlackCatSweater",
+  "bottom": "Paradox Hybrid Denim",
+  "shoes": "SummerShoes",
+  "face": 1,
+  "skin": 0,
+  "hairColor": "#2A2A2A"
+ },
+ "presets": {
+  "girl": {
+   "hair": "Hair11",
+   "hat": "",
+   "top": "Top1",
+   "bottom": "Skirt",
+   "shoes": "Shoe2",
+   "face": 6,
+   "skin": 0,
+   "hairColor": "#8A4B2A"
+  },
+  "boy": {
+   "hair": "Hair5",
+   "hat": "Sunglasses",
+   "top": "67Top",
+   "bottom": "67Shorts",
+   "shoes": "67Sneakers",
+   "face": 7,
+   "skin": 0,
+   "hairColor": "#5A3A2A"
+  }
+ }
+}

@@ -1,0 +1,134 @@
+/* Shard pack drop rates (PackManager.renderOdds). Opened from the Hourly Shop's
+   pack card and the Skin Shop's free pack; Poki asks for pack odds to be shown
+   in game. Sizes are in panel units: calc(var(--po) * N), chosen so the card
+   fits a short landscape phone as well as a narrow portrait one. */
+
+.po-overlay {
+    --po: min(var(--hud, 1px), calc((var(--view-h, 100vh) - 32px) / 860), calc((var(--view-w, 100vw) - 24px) / 560));
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+}
+
+.po-shade {
+    position: absolute;
+    inset: 0;
+    background: rgba(28, 10, 48, 0.45);
+}
+
+.po-card {
+    position: relative;
+    width: calc(var(--po) * 540);
+    max-height: calc(100% - 24px);
+    display: flex;
+    flex-direction: column;
+    border-radius: calc(var(--po) * 32);
+    background: linear-gradient(#fffaf2, #fff1df);
+    border: calc(var(--po) * 4) solid #f9d5b0;
+    box-shadow: 0 calc(var(--po) * 12) calc(var(--po) * 30) rgba(40, 20, 50, 0.35);
+    overflow: hidden;
+}
+
+.po-head {
+    position: relative;
+    flex: none;
+    padding: calc(var(--po) * 18) calc(var(--po) * 80);
+    background: #f99356;
+    text-align: center;
+}
+
+.po-title {
+    --outline: #b8582a;
+    --outline-width: max(1px, calc(var(--po) * 3));
+    color: #fff;
+    font-size: max(16px, calc(var(--po) * 38));
+}
+
+.po-close {
+    position: absolute;
+    top: 50%;
+    right: calc(var(--po) * 16);
+    width: calc(var(--po) * 52);
+    height: calc(var(--po) * 52);
+    transform: translateY(-50%);
+    border-radius: 50%;
+    background: #fff;
+    color: #f07a3c;
+    font-size: max(18px, calc(var(--po) * 40));
+    line-height: 1;
+}
+
+.po-body {
+    overflow-y: auto;
+    padding: calc(var(--po) * 20) calc(var(--po) * 28) calc(var(--po) * 26);
+    color: #8a5a44;
+    font-size: max(12px, calc(var(--po) * 24));
+    line-height: 1.25;
+}
+
+.po-pack {
+    color: #e0703a;
+    font-size: max(14px, calc(var(--po) * 30));
+    text-align: center;
+}
+
+.po-lead,
+.po-note {
+    margin: calc(var(--po) * 8) 0 0;
+    text-align: center;
+}
+
+.po-note {
+    color: #b08470;
+    font-size: max(11px, calc(var(--po) * 21));
+}
+
+.po-section {
+    margin-top: calc(var(--po) * 18);
+    color: #e0703a;
+    font-size: max(13px, calc(var(--po) * 26));
+}
+
+.po-box {
+    margin-top: calc(var(--po) * 10);
+    padding: calc(var(--po) * 6) calc(var(--po) * 16);
+    border-radius: calc(var(--po) * 18);
+    background: #ffffff;
+    box-shadow: inset 0 0 0 calc(var(--po) * 3) #fbe3cc;
+}
+
+.po-row {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--po) * 12);
+    padding: calc(var(--po) * 8) 0;
+}
+
+.po-row + .po-row {
+    border-top: calc(var(--po) * 2) dashed #fbe3cc;
+}
+
+.po-label {
+    flex: 1;
+    min-width: 0;
+}
+
+.po-value {
+    flex: none;
+    color: #e0703a;
+}
+
+.po-icon {
+    flex: none;
+    width: calc(var(--po) * 40);
+    height: calc(var(--po) * 40);
+}
+
+.po-done .po-label {
+    color: #3fae6b;
+    text-align: center;
+}

@@ -1,0 +1,430 @@
+/* Daily Login panel (DailyLoginPanel.js + DailyLoginView.js).
+   Sizes are in panel units: calc(var(--dl) * N). --dl is chosen so the whole
+   window, with the title bar and close button that hang outside it, fills
+   the screen. Landscape puts the seven days in one row; portrait wraps them
+   four across with the day-seven prize as a wide card. Font sizes carry a
+   pixel floor so phones never get text smaller than that. The look is the
+   game's pastel one, as in the journal, the wardrobe and the backpack. */
+
+.dl-overlay {
+    --dl: min(
+        calc((var(--view-w, 100vw) - 24px) / 1320),
+        calc((var(--view-h, 100vh) - 24px) / 760)
+    );
+    --dl-ink: #5b3f78;
+    --dl-ink-soft: #a08bb8;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(70, 30, 100, 0.32);
+    pointer-events: auto;
+    touch-action: none;
+}
+
+.lui-portrait .dl-overlay {
+    --dl: min(
+        calc((var(--view-w, 100vw) - 24px) / 948),
+        calc((var(--view-h, 100vh) - 24px) / 1290)
+    );
+}
+
+.dl-window {
+    position: relative;
+    width: calc(var(--dl) * 1240);
+    height: calc(var(--dl) * 660);
+    margin-top: calc(var(--dl) * 50);
+}
+
+.lui-portrait .dl-window {
+    width: calc(var(--dl) * 860);
+    height: calc(var(--dl) * 1210);
+}
+
+/* ---- Frame ---------------------------------------------------------- */
+
+.dl-panel {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: calc(var(--dl) * 22);
+    padding: calc(var(--dl) * 74) calc(var(--dl) * 40) calc(var(--dl) * 34);
+    border-radius: calc(var(--dl) * 48);
+    background:
+        radial-gradient(circle at 10% 10%, rgba(255, 214, 236, 0.75) 0, rgba(255, 214, 236, 0) calc(var(--dl) * 280)),
+        radial-gradient(circle at 92% 94%, rgba(214, 236, 255, 0.75) 0, rgba(214, 236, 255, 0) calc(var(--dl) * 320)),
+        linear-gradient(#fffaf6, #fff3f9);
+    border: calc(var(--dl) * 9) solid #ffd6ea;
+    box-shadow:
+        0 0 0 calc(var(--dl) * 3) #f590c0,
+        inset 0 0 0 calc(var(--dl) * 3) #ffb8da,
+        0 calc(var(--dl) * 12) calc(var(--dl) * 34) rgba(90, 40, 120, 0.35);
+}
+
+.dl-title {
+    position: absolute;
+    left: 50%;
+    top: calc(var(--dl) * -54);
+    width: calc(var(--dl) * 520);
+    height: calc(var(--dl) * 96);
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-size: 100% 100%;
+}
+
+.dl-title-text {
+    --outline: #cc4d00;
+    --outline-width: max(1px, calc(var(--dl) * 3.5));
+    color: #ffcc4d;
+    font-size: max(16px, calc(var(--dl) * 46));
+    letter-spacing: calc(var(--dl) * 1);
+    white-space: nowrap;
+}
+
+.dl-close {
+    position: absolute;
+    top: calc(var(--dl) * -44);
+    right: calc(var(--dl) * -44);
+    width: max(40px, calc(var(--dl) * 112));
+    height: max(40px, calc(var(--dl) * 112));
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 3;
+}
+
+.dl-hint {
+    color: var(--dl-ink-soft);
+    font-size: max(13px, calc(var(--dl) * 32));
+    line-height: 1.15;
+    text-align: center;
+}
+
+.dl-hint::before,
+.dl-hint::after {
+    content: '\2726';
+    margin: 0 calc(var(--dl) * 12);
+    color: #f59ac6;
+}
+
+/* ---- Days ----------------------------------------------------------- */
+
+.dl-days {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr) 1.35fr;
+    gap: calc(var(--dl) * 16);
+    align-items: stretch;
+}
+
+.lui-portrait .dl-days {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: 1fr 1fr;
+}
+
+/* Day seven: the prize, as wide as two days in portrait. */
+.lui-portrait .dl-card.is-prize {
+    grid-column: span 2;
+}
+
+.dl-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: calc(var(--dl) * 18) calc(var(--dl) * 8) calc(var(--dl) * 16);
+    border-radius: calc(var(--dl) * 30);
+    background: #ffffff;
+    box-shadow:
+        inset 0 0 0 calc(var(--dl) * 3) #f3e9ff,
+        0 calc(var(--dl) * 6) 0 #ecdcfa,
+        0 calc(var(--dl) * 10) calc(var(--dl) * 16) rgba(140, 90, 190, 0.1);
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.dl-day {
+    color: var(--dl-ink);
+    font-size: max(12px, calc(var(--dl) * 28));
+    white-space: nowrap;
+}
+
+.dl-art {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: calc(var(--dl) * 8) 0;
+}
+
+.dl-icon {
+    width: calc(var(--dl) * 104);
+    height: calc(var(--dl) * 104);
+    background-repeat: no-repeat;
+}
+
+.dl-reward {
+    max-width: 100%;
+    padding: calc(var(--dl) * 2) calc(var(--dl) * 14);
+    border-radius: calc(var(--dl) * 16);
+    background: #f6effe;
+    color: var(--dl-ink);
+    font-size: max(11px, calc(var(--dl) * 24));
+    line-height: 1.25;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Portrait cards are tall: bigger art and labels. */
+.lui-portrait .dl-icon { width: calc(var(--dl) * 140); height: calc(var(--dl) * 140); }
+.lui-portrait .dl-card.is-prize .dl-icon { width: calc(var(--dl) * 200); height: calc(var(--dl) * 200); }
+.lui-portrait .dl-day { font-size: max(13px, calc(var(--dl) * 34)); }
+.lui-portrait .dl-reward { font-size: max(12px, calc(var(--dl) * 28)); }
+
+/* Collected: mint, with a tick; the art steps back a little. */
+.dl-card.is-collected {
+    background: #e9fbf4;
+    box-shadow:
+        inset 0 0 0 calc(var(--dl) * 3) #b9eed8,
+        0 calc(var(--dl) * 6) 0 #bfe8d6;
+}
+
+.dl-card.is-collected .dl-icon {
+    opacity: 0.55;
+}
+
+.dl-card.is-collected .dl-reward {
+    background: #d4f5e7;
+    color: #3f8f6e;
+}
+
+.dl-check {
+    position: absolute;
+    right: calc(var(--dl) * -16);
+    top: calc(var(--dl) * -18);
+    width: calc(var(--dl) * 56);
+    height: calc(var(--dl) * 56);
+    animation: dl-check-in 0.45s cubic-bezier(0.34, 1.8, 0.64, 1) both;
+}
+
+@keyframes dl-check-in {
+    from { opacity: 0; transform: scale(0.2) rotate(-25deg); }
+}
+
+/* Today. The halo breathes on a pseudo-element, so the card's own
+   animation (its entrance) is never touched. */
+.dl-card.is-today {
+    background: #fff4fa;
+    box-shadow:
+        inset 0 0 0 calc(var(--dl) * 5) #ff8fc4,
+        0 calc(var(--dl) * 6) 0 #f6b6d6;
+}
+
+.dl-card.is-ready::after {
+    content: '';
+    position: absolute;
+    inset: calc(var(--dl) * -6);
+    border-radius: calc(var(--dl) * 36);
+    box-shadow: 0 0 calc(var(--dl) * 22) rgba(255, 143, 196, 0.7);
+    pointer-events: none;
+    animation: dl-glow 1.6s ease-in-out infinite;
+}
+
+.dl-card.is-ready .dl-icon {
+    animation: dl-bob 1.6s ease-in-out infinite;
+}
+
+@keyframes dl-glow {
+    0%, 100% { opacity: 0.35; }
+    50% { opacity: 1; }
+}
+
+@keyframes dl-bob {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(calc(var(--dl) * -6)) scale(1.06); }
+}
+
+.dl-today {
+    position: absolute;
+    left: 50%;
+    top: calc(var(--dl) * -18);
+    transform: translateX(-50%);
+    padding: 0 calc(var(--dl) * 14);
+    border-radius: calc(var(--dl) * 16);
+    background: #ff8fc4;
+    box-shadow: 0 calc(var(--dl) * 3) 0 #e0679f;
+    color: #ffffff;
+    font-size: max(11px, calc(var(--dl) * 22));
+    line-height: 1.5;
+    white-space: nowrap;
+    z-index: 2;
+}
+
+/* Day seven: a soft gold card with a little shine. */
+.dl-card.is-prize {
+    background:
+        radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.95) 0, rgba(255, 255, 255, 0) 60%),
+        linear-gradient(160deg, #fff4d6, #ffe3f1);
+    box-shadow:
+        inset 0 0 0 calc(var(--dl) * 4) #ffd98f,
+        0 calc(var(--dl) * 6) 0 #f4c97a,
+        0 calc(var(--dl) * 10) calc(var(--dl) * 18) rgba(230, 160, 60, 0.2);
+}
+
+.dl-card.is-prize.is-today {
+    box-shadow:
+        inset 0 0 0 calc(var(--dl) * 5) #ff8fc4,
+        0 calc(var(--dl) * 6) 0 #f4c97a;
+}
+
+.dl-card.is-prize .dl-icon {
+    width: calc(var(--dl) * 150);
+    height: calc(var(--dl) * 150);
+}
+
+.dl-card.is-prize .dl-reward {
+    background: #ffefc4;
+    color: #9a6416;
+}
+
+.dl-card.is-prize::before {
+    content: '\2726';
+    position: absolute;
+    right: 16%;
+    top: 22%;
+    color: #ffc95c;
+    font-size: max(12px, calc(var(--dl) * 34));
+    animation: dl-twinkle 2.2s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes dl-twinkle {
+    0%, 100% { opacity: 0.2; transform: scale(0.7); }
+    50% { opacity: 1; transform: scale(1.1); }
+}
+
+/* ---- Claim buttons ------------------------------------------------------ */
+
+.dl-actions {
+    flex: none;
+    display: flex;
+    justify-content: center;
+    gap: calc(var(--dl) * 28);
+}
+
+.dl-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* The button art is 180 x 85; the box keeps that shape. */
+    width: calc(var(--dl) * 300);
+    height: calc(var(--dl) * 141.67);
+    padding: 0 calc(var(--dl) * 22) calc(var(--dl) * 8);
+    background-size: 100% 100%;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s, filter 0.15s;
+}
+
+.lui-portrait .dl-button {
+    width: calc(var(--dl) * 320);
+    height: calc(var(--dl) * 151.11);
+}
+
+/* Nothing to take right now: faded, as authored. */
+.dl-button:disabled {
+    opacity: 0.45;
+    filter: saturate(0.6);
+}
+
+.dl-double.is-busy {
+    opacity: 0.7;
+}
+
+.dl-button-text {
+    --outline: #336619;
+    --outline-width: max(1px, calc(var(--dl) * 2.5));
+    color: #ffffff;
+    font-size: max(14px, calc(var(--dl) * 36));
+    line-height: 1.05;
+    text-align: center;
+}
+
+.dl-double .dl-button-text {
+    --outline: #1a4d66;
+}
+
+.dl-double-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(var(--dl) * 2);
+}
+
+.dl-double-ad {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--dl) * 6);
+}
+
+.dl-ad-icon {
+    width: calc(var(--dl) * 36);
+    height: calc(var(--dl) * 36);
+}
+
+.dl-ad-text {
+    --outline: #1a4d66;
+    --outline-width: max(1px, calc(var(--dl) * 2));
+    color: #ffffff;
+    font-size: max(11px, calc(var(--dl) * 24));
+}
+
+/* ---- Reward flight ------------------------------------------------------ */
+
+.dl-flights {
+    position: absolute;
+    inset: 0;
+    z-index: 30;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.dl-fly {
+    position: absolute;
+    left: 0;
+    top: 0;
+    will-change: transform, opacity;
+}
+
+/* ---- Hover and press --------------------------------------------------
+   Same feel as the other panels: a soft spring up under the mouse, a quick
+   squash when pressed, hover only where there is a real pointer. */
+
+@media (hover: hover) {
+    .dl-close:hover { transform: scale(1.15); }
+    .dl-button:not(:disabled):hover { transform: scale(1.08); }
+}
+
+.dl-close:active,
+.dl-button:not(:disabled):active {
+    transition-duration: 0.1s;
+}
+
+.dl-close:active { transform: scale(0.88); }
+.dl-button:not(:disabled):active { transform: scale(0.92); }
+
+@media (prefers-reduced-motion: reduce) {
+    .dl-card.is-ready::after,
+    .dl-card.is-ready .dl-icon,
+    
+    }
+}

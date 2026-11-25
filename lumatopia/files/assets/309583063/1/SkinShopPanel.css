@@ -1,0 +1,655 @@
+/* Wardrobe vending machine (SkinShop.js + SkinShopView.js).
+   Sizes are in shop units: calc(var(--sk) * N). The panel sits beside the
+   player on wide screens (data-layout="side", on the right) and under them on
+   narrow ones (data-layout="bottom"); SkinShop.js picks the layout with the
+   same rule the camera framing uses, and frames the player in the space the
+   panel leaves. There is no backdrop: the player is the point of this shop.
+   Font sizes carry a pixel floor so phones never get text smaller than that.
+   The look is the game's pastel one, as in the achievement journal. */
+
+.sk-overlay {
+    --sk: min(
+        calc(var(--view-w, 100vw) * 0.42 / 720),
+        calc((var(--view-h, 100vh) - 24px) / 1000)
+    );
+    --sk-ink: #5b3f78;
+    --sk-ink-soft: #a08bb8;
+    position: absolute;
+    inset: 0;
+    pointer-events: auto;
+    touch-action: none;
+}
+
+.sk-overlay[data-layout="bottom"] {
+    --sk: min(
+        calc((var(--view-w, 100vw) - 16px) / 900),
+        calc(var(--view-h, 100vh) * 0.6 / 820)
+    );
+}
+
+/* ---- Panel ---------------------------------------------------------- */
+
+.sk-panel {
+    position: absolute;
+    right: 12px;
+    top: calc(50% - var(--sk) * 500);
+    width: calc(var(--sk) * 720);
+    height: calc(var(--sk) * 1000);
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--sk) * 14);
+    padding: calc(var(--sk) * 30) calc(var(--sk) * 26) calc(var(--sk) * 24);
+    border-radius: calc(var(--sk) * 48);
+    background:
+        radial-gradient(circle at 15% 6%, rgba(255, 214, 236, 0.75) 0, rgba(255, 214, 236, 0) calc(var(--sk) * 260)),
+        radial-gradient(circle at 90% 96%, rgba(214, 236, 255, 0.75) 0, rgba(214, 236, 255, 0) calc(var(--sk) * 300)),
+        linear-gradient(#fffaf6, #fff3f9);
+    border: calc(var(--sk) * 9) solid #ffd6ea;
+    box-shadow:
+        0 0 0 calc(var(--sk) * 3) #f590c0,
+        inset 0 0 0 calc(var(--sk) * 3) #ffb8da,
+        0 calc(var(--sk) * 12) calc(var(--sk) * 34) rgba(90, 40, 120, 0.3);
+}
+
+.sk-overlay[data-layout="bottom"] .sk-panel {
+    right: auto;
+    left: calc(50% - var(--sk) * 450);
+    top: auto;
+    bottom: 8px;
+    width: calc(var(--sk) * 900);
+    height: calc(var(--sk) * 820);
+    padding: calc(var(--sk) * 24) calc(var(--sk) * 24) calc(var(--sk) * 18);
+}
+
+/* The panel slides in from its own edge with a little bounce, and back out. */
+.sk-overlay.lui-opening .sk-panel {
+    animation: sk-in-side 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.15) both;
+}
+
+.sk-overlay[data-layout="bottom"].lui-opening .sk-panel {
+    animation-name: sk-in-bottom;
+}
+
+.sk-overlay.lui-closing .sk-panel {
+    animation: sk-out-side 0.18s cubic-bezier(0.5, 0, 0.75, 0) both;
+}
+
+.sk-overlay[data-layout="bottom"].lui-closing .sk-panel {
+    animation-name: sk-out-bottom;
+}
+
+@keyframes sk-in-side {
+    from { opacity: 0; transform: translateX(calc(100% + 40px)) rotate(4deg); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes sk-out-side {
+    to { opacity: 0; transform: translateX(calc(60% + 40px)); }
+}
+
+@keyframes sk-in-bottom {
+    from { opacity: 0; transform: translateY(calc(100% + 40px)); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes sk-out-bottom {
+    to { opacity: 0; transform: translateY(calc(60% + 40px)); }
+}
+
+.sk-close {
+    position: absolute;
+    top: calc(var(--sk) * -38);
+    left: calc(var(--sk) * -38);
+    width: max(40px, calc(var(--sk) * 110));
+    height: max(40px, calc(var(--sk) * 110));
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 4;
+}
+
+.sk-overlay[data-layout="bottom"] .sk-close {
+    left: auto;
+    right: calc(var(--sk) * -20);
+    top: calc(var(--sk) * -50);
+}
+
+/* ---- Section tabs --------------------------------------------------- */
+
+.sk-tabs {
+    flex: none;
+    display: grid;
+    /* One column per shown tab: the Hand tab appears only on servers that
+       know hand props. */
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: calc(var(--sk) * 12);
+    padding: 0 calc(var(--sk) * 30) calc(var(--sk) * 6);
+}
+
+.sk-overlay[data-layout="bottom"] .sk-tabs {
+    padding: 0 calc(var(--sk) * 60) calc(var(--sk) * 6) calc(var(--sk) * 20);
+}
+
+.sk-tab {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: calc(var(--sk) * 92);
+    border-radius: calc(var(--sk) * 28);
+    background: #efe3ff;
+    box-shadow: inset 0 calc(var(--sk) * -5) 0 rgba(0, 0, 0, 0.05), 0 calc(var(--sk) * 5) 0 #d8c3f5;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s, box-shadow 0.2s;
+}
+
+.sk-tab.is-active {
+    background: #ff9fcf;
+    box-shadow:
+        inset 0 0 0 calc(var(--sk) * 4) rgba(255, 255, 255, 0.85),
+        inset 0 calc(var(--sk) * -6) 0 rgba(0, 0, 0, 0.08),
+        0 calc(var(--sk) * 5) 0 #e0679f;
+}
+
+.sk-tab-icon {
+    width: calc(var(--sk) * 62);
+    height: calc(var(--sk) * 62);
+    background: #8a6bb0;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+}
+
+.sk-tab.is-active .sk-tab-icon {
+    background: #ffffff;
+}
+
+/* ---- Hair colours --------------------------------------------------- */
+
+.sk-colors {
+    flex: none;
+    display: flex;
+    justify-content: center;
+    gap: calc(var(--sk) * 14);
+    padding: calc(var(--sk) * 4) 0;
+}
+
+.sk-color {
+    width: calc(var(--sk) * 58);
+    height: calc(var(--sk) * 58);
+    border-radius: 50%;
+    background: var(--sk-swatch, #ccc);
+    box-shadow: inset 0 0 0 calc(var(--sk) * 4) rgba(255, 255, 255, 0.9), 0 calc(var(--sk) * 3) 0 rgba(120, 80, 160, 0.25);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+}
+
+.sk-color.is-selected {
+    transform: scale(1.12);
+    box-shadow: inset 0 0 0 calc(var(--sk) * 4) #ffffff, 0 0 0 calc(var(--sk) * 4) #ff8fc4;
+}
+
+/* ---- Items ---------------------------------------------------------- */
+
+.sk-grid {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: max-content;
+    gap: calc(var(--sk) * 16);
+    padding: calc(var(--sk) * 14) calc(var(--sk) * 10);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    scrollbar-width: thin;
+    scrollbar-color: #f2a8d0 transparent;
+}
+
+.sk-overlay[data-layout="bottom"] .sk-grid {
+    grid-template-columns: repeat(5, 1fr);
+}
+
+.sk-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: calc(var(--sk) * 28);
+    background: #ffffff;
+    box-shadow:
+        inset 0 0 0 calc(var(--sk) * 3) #f3e9ff,
+        0 calc(var(--sk) * 5) 0 #ecdcfa,
+        0 calc(var(--sk) * 8) calc(var(--sk) * 14) rgba(140, 90, 190, 0.1);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s, background-color 0.2s;
+}
+
+.sk-item[data-state="locked"] {
+    background: #f7f1fe;
+}
+
+.sk-item.is-equipped {
+    box-shadow:
+        inset 0 0 0 calc(var(--sk) * 5) #ff8fc4,
+        0 calc(var(--sk) * 5) 0 #f6b6d6,
+        0 calc(var(--sk) * 8) calc(var(--sk) * 14) rgba(240, 100, 170, 0.18);
+}
+
+.sk-item.is-trying {
+    background: #ffffff;
+    box-shadow:
+        inset 0 0 0 calc(var(--sk) * 5) #b98cff,
+        0 calc(var(--sk) * 5) 0 #cdb0f5,
+        0 0 calc(var(--sk) * 22) rgba(185, 140, 255, 0.55);
+}
+
+/* The piece being tried on bobs gently. It is the picture that moves, not the
+   card: the card's own animation is its entrance, and hover must never touch
+   that, or leaving a card would replay it from invisible. */
+.sk-item.is-trying .sk-item-icon {
+    animation: sk-trying 1.6s ease-in-out infinite;
+}
+
+@keyframes sk-trying {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+}
+
+.sk-item-icon {
+    position: absolute;
+    inset: 9%;
+    background-repeat: no-repeat;
+}
+
+/* "No hat": a soft crossed-out circle instead of a picture. */
+.sk-item.is-none .sk-item-icon::before {
+    content: '';
+    position: absolute;
+    inset: 22%;
+    border-radius: 50%;
+    border: calc(var(--sk) * 7) solid #d9c8f0;
+}
+
+.sk-item.is-none .sk-item-icon::after {
+    content: '';
+    position: absolute;
+    left: 20%;
+    right: 20%;
+    top: calc(50% - var(--sk) * 3.5);
+    height: calc(var(--sk) * 7);
+    border-radius: calc(var(--sk) * 4);
+    background: #d9c8f0;
+    transform: rotate(-45deg);
+}
+
+.sk-item-lock {
+    position: absolute;
+    top: calc(var(--sk) * -8);
+    right: calc(var(--sk) * -6);
+    width: calc(var(--sk) * 46);
+    height: calc(var(--sk) * 46);
+    transform: rotate(-15deg);
+}
+
+.sk-item-check {
+    position: absolute;
+    right: calc(var(--sk) * -4);
+    bottom: calc(var(--sk) * -4);
+    width: calc(var(--sk) * 46);
+    height: calc(var(--sk) * 46);
+}
+
+/* Buy-now price, already lowered by the shards held. */
+.sk-item-price {
+    position: absolute;
+    top: calc(var(--sk) * 6);
+    left: calc(var(--sk) * 6);
+    display: flex;
+    align-items: center;
+    gap: calc(var(--sk) * 3);
+    padding: calc(var(--sk) * 1) calc(var(--sk) * 9) calc(var(--sk) * 1) calc(var(--sk) * 2);
+    border-radius: calc(var(--sk) * 20);
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 calc(var(--sk) * 2) 0 rgba(150, 110, 200, 0.25);
+}
+
+.sk-item-price-icon {
+    width: calc(var(--sk) * 26);
+    height: calc(var(--sk) * 26);
+}
+
+/* Unlocked by a rewarded ad: the white video icon on the ad button's blue. */
+.sk-item-price.is-ad {
+    padding: calc(var(--sk) * 2) calc(var(--sk) * 7);
+    background: #3bd0ff;
+    box-shadow: 0 calc(var(--sk) * 2) 0 #1f6fa8;
+}
+
+.sk-item-price-text {
+    color: var(--sk-ink);
+    font-size: max(10px, calc(var(--sk) * 19));
+    white-space: nowrap;
+}
+
+.sk-item-shards {
+    position: absolute;
+    left: calc(var(--sk) * 10);
+    right: calc(var(--sk) * 10);
+    bottom: calc(var(--sk) * 8);
+    display: flex;
+    align-items: center;
+    gap: calc(var(--sk) * 5);
+}
+
+.sk-item-shard-track,
+.sk-try-shard-track {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
+    background: #efe5fb;
+    box-shadow: inset 0 calc(var(--sk) * 1) calc(var(--sk) * 2) rgba(120, 80, 160, 0.15);
+}
+
+.sk-item-shard-track {
+    height: calc(var(--sk) * 12);
+    border-radius: calc(var(--sk) * 6);
+}
+
+.sk-item-shard-fill,
+.sk-try-shard-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #ff9fcf, #c79bff);
+    transition: width 0.4s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+
+.sk-item-shard-text {
+    color: var(--sk-ink);
+    font-size: max(10px, calc(var(--sk) * 18));
+}
+
+.sk-item-tag {
+    position: absolute;
+    left: 50%;
+    bottom: calc(var(--sk) * 6);
+    transform: translateX(-50%);
+    padding: 0 calc(var(--sk) * 10);
+    border-radius: calc(var(--sk) * 14);
+    background: #c9a6ff;
+    color: #ffffff;
+    font-size: max(10px, calc(var(--sk) * 18));
+    white-space: nowrap;
+}
+
+/* Hand props earned by catching: the animal to catch, in the top corner. */
+.sk-item-badge {
+    position: absolute;
+    top: calc(var(--sk) * 4);
+    left: calc(var(--sk) * 4);
+    width: 36%;
+    height: 36%;
+    border-radius: 50%;
+    background-color: #ffffff;
+    background-size: 84%;
+    box-shadow: inset 0 0 0 calc(var(--sk) * 3) #f3e9ff, 0 calc(var(--sk) * 2) 0 rgba(150, 110, 200, 0.25);
+}
+
+/* ---- Action bar ------------------------------------------------------ */
+
+.sk-action {
+    flex: none;
+    min-height: calc(var(--sk) * 150);
+    display: flex;
+    align-items: center;
+    padding: calc(var(--sk) * 12) calc(var(--sk) * 18);
+    border-radius: calc(var(--sk) * 32);
+    background: #f6effe;
+    box-shadow: inset 0 0 0 calc(var(--sk) * 3) #eadcfb;
+}
+
+.sk-overlay[data-layout="bottom"] .sk-action {
+    min-height: calc(var(--sk) * 128);
+}
+
+.sk-try,
+.sk-idle {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--sk) * 14);
+    min-width: 0;
+}
+
+.sk-try-bubble {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: calc(var(--sk) * 104);
+    height: calc(var(--sk) * 104);
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ffffff 0, #eadcff 75%);
+    box-shadow: inset 0 0 0 calc(var(--sk) * 3) #ddc8fb;
+}
+
+.sk-try-icon {
+    width: calc(var(--sk) * 84);
+    height: calc(var(--sk) * 84);
+    background-repeat: no-repeat;
+}
+
+.sk-try-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--sk) * 4);
+}
+
+.sk-try-title {
+    color: var(--sk-ink);
+    font-size: max(13px, calc(var(--sk) * 30));
+    line-height: 1.1;
+}
+
+.sk-try-note {
+    color: var(--sk-ink-soft);
+    font-size: max(11px, calc(var(--sk) * 22));
+    line-height: 1.15;
+}
+
+.sk-try-shards {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--sk) * 8);
+}
+
+.sk-try-shard-track {
+    height: calc(var(--sk) * 14);
+    border-radius: calc(var(--sk) * 7);
+}
+
+.sk-try-shard-text {
+    color: var(--sk-ink);
+    font-size: max(11px, calc(var(--sk) * 21));
+    white-space: nowrap;
+}
+
+.sk-buy {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: calc(var(--sk) * 220);
+    height: calc(var(--sk) * 104);
+    padding-bottom: calc(var(--sk) * 6);
+    background-size: 100% 100%;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s;
+}
+
+.sk-buy:disabled {
+    opacity: 0.6;
+}
+
+/* Unlocked by watching a rewarded ad: the blue button and the video icon. */
+.sk-buy.is-ad .sk-buy-label {
+    --outline: #1f6fa8;
+}
+
+.sk-buy-label {
+    --outline: #2e8a12;
+    --outline-width: max(1px, calc(var(--sk) * 2.5));
+    color: #ffffff;
+    font-size: max(13px, calc(var(--sk) * 30));
+    line-height: 1;
+}
+
+.sk-buy-price {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--sk) * 4);
+}
+
+.sk-buy-currency {
+    width: calc(var(--sk) * 34);
+    height: calc(var(--sk) * 34);
+}
+
+.sk-buy-amount {
+    --outline: #2e8a12;
+    --outline-width: max(1px, calc(var(--sk) * 2.5));
+    color: #ffffff;
+    font-size: max(13px, calc(var(--sk) * 30));
+}
+
+/* The full price, struck through, when shards have brought it down. */
+.sk-buy-was {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: max(10px, calc(var(--sk) * 20));
+    text-decoration: line-through;
+    text-decoration-thickness: calc(var(--sk) * 3);
+}
+
+.sk-hint {
+    flex: 1;
+    min-width: 0;
+    color: var(--sk-ink-soft);
+    font-size: max(12px, calc(var(--sk) * 25));
+    line-height: 1.2;
+}
+
+.sk-hint::before {
+    content: '\2726  ';
+    color: #f59ac6;
+}
+
+.sk-free-pack {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--sk) * 10);
+    padding: calc(var(--sk) * 8) calc(var(--sk) * 18) calc(var(--sk) * 8) calc(var(--sk) * 8);
+    border-radius: calc(var(--sk) * 30);
+    background: #ffffff;
+    box-shadow: 0 calc(var(--sk) * 5) 0 #e4d2fa, inset 0 0 0 calc(var(--sk) * 3) #f0e6fd;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.sk-free-pack-art {
+    position: relative;
+    width: calc(var(--sk) * 86);
+    height: calc(var(--sk) * 86);
+    animation: sk-pack-float 2.2s ease-in-out infinite;
+}
+
+.sk-free-pack-front { position: absolute; inset: 0; }
+.sk-free-pack-top { position: absolute; left: 0; right: 0; top: calc(var(--sk) * -2); height: 50%; }
+
+@keyframes sk-pack-float {
+    0%, 100% { transform: translateY(0) rotate(-4deg); }
+    50% { transform: translateY(calc(var(--sk) * -6)) rotate(4deg); }
+}
+
+.sk-free-pack-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: calc(var(--sk) * 4);
+}
+
+.sk-free-pack-label {
+    color: var(--sk-ink);
+    font-size: max(12px, calc(var(--sk) * 25));
+    white-space: nowrap;
+}
+
+.sk-free-pack-ad {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: calc(var(--sk) * 2) calc(var(--sk) * 12);
+    border-radius: calc(var(--sk) * 14);
+    background: #49c8ff;
+}
+
+.sk-free-pack-ad-icon {
+    width: calc(var(--sk) * 30);
+    height: calc(var(--sk) * 30);
+}
+
+.sk-toast-error {
+    --outline: #5a1212;
+    color: #ff5c5c;
+}
+
+/* ---- Hover and press --------------------------------------------------
+   Same feel as the other panels: a soft spring up under the mouse, a quick
+   squash when pressed, hover only where there is a real pointer. */
+
+@media (hover: hover) {
+    .sk-close:hover { transform: scale(1.15); }
+    .sk-tab:hover { transform: scale(1.07); }
+    .sk-item:hover { transform: scale(1.07); }
+    .sk-color:not(.is-selected):hover { transform: scale(1.12); }
+    .sk-buy:not(:disabled):hover,
+    .sk-free-pack:hover { transform: scale(1.06); }
+}
+
+.sk-close:active,
+.sk-tab:active,
+.sk-item:active,
+.sk-buy:not(:disabled):active,
+.sk-free-pack:active {
+    transition-duration: 0.1s;
+}
+
+.sk-close:active { transform: scale(0.88); }
+.sk-tab:active { transform: scale(0.93); }
+.sk-item:active { transform: scale(0.94); }
+.sk-buy:not(:disabled):active,
+.sk-free-pack:active { transform: scale(0.92); }
+
+@media (prefers-reduced-motion: reduce) {
+    .sk-item.is-trying .sk-item-icon,
+    .sk-free-pack-art { animation: none; }
+}
+
+/* Drop rates for the free shard pack (Poki asks for pack odds in game). */
+.sk-pack-odds {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: calc(var(--sk) * 44);
+    height: calc(var(--sk) * 44);
+    margin-left: calc(var(--sk) * -6);
+    border-radius: 50%;
+    background: #ffffff;
+    color: #9a6fd8;
+    font-size: max(13px, calc(var(--sk) * 26));
+    box-shadow: 0 calc(var(--sk) * 4) 0 #e4d2fa, inset 0 0 0 calc(var(--sk) * 3) #f0e6fd;
+}

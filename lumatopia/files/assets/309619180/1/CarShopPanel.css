@@ -1,0 +1,436 @@
+/* Car dealer (CarShop.js + CarShopView.js).
+   Sizes are in dealer units: calc(var(--cs) * N). --cs is chosen so the whole
+   window, with the title bar and close button that hang outside it, fills
+   the screen. Landscape shows the cars side by side as tall cards; portrait
+   stacks them as wide cards with the picture on the left.
+   Font sizes carry a pixel floor so phones never get text smaller than that.
+   The look is the game's pastel one, as in the other panels. */
+
+.cs-overlay {
+    --cs: min(
+        calc((var(--view-w, 100vw) - 24px) / 1180),
+        calc((var(--view-h, 100vh) - 24px) / 760)
+    );
+    --cs-ink: #5b3f78;
+    --cs-ink-soft: #a08bb8;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(70, 30, 100, 0.32);
+    pointer-events: auto;
+    touch-action: none;
+}
+
+.lui-portrait .cs-overlay {
+    --cs: min(
+        calc((var(--view-w, 100vw) - 24px) / 900),
+        calc((var(--view-h, 100vh) - 24px) / 1180)
+    );
+}
+
+.cs-window {
+    position: relative;
+    width: calc(var(--cs) * 1080);
+    height: calc(var(--cs) * 640);
+    margin-top: calc(var(--cs) * 50);
+}
+
+.lui-portrait .cs-window {
+    width: calc(var(--cs) * 800);
+    height: calc(var(--cs) * 1060);
+}
+
+/* ---- Frame ---------------------------------------------------------- */
+
+.cs-panel {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: calc(var(--cs) * 80) calc(var(--cs) * 40) calc(var(--cs) * 40);
+    border-radius: calc(var(--cs) * 48);
+    background:
+        radial-gradient(circle at 12% 8%, rgba(255, 214, 236, 0.7) 0, rgba(255, 214, 236, 0) calc(var(--cs) * 260)),
+        radial-gradient(circle at 92% 96%, rgba(214, 236, 255, 0.7) 0, rgba(214, 236, 255, 0) calc(var(--cs) * 300)),
+        linear-gradient(#fffaf6, #fff3f9);
+    border: calc(var(--cs) * 9) solid #ffd6ea;
+    box-shadow:
+        0 0 0 calc(var(--cs) * 3) #f590c0,
+        inset 0 0 0 calc(var(--cs) * 3) #ffb8da,
+        0 calc(var(--cs) * 12) calc(var(--cs) * 34) rgba(90, 40, 120, 0.35);
+}
+
+.cs-title {
+    position: absolute;
+    left: 50%;
+    top: calc(var(--cs) * -54);
+    width: calc(var(--cs) * 480);
+    height: calc(var(--cs) * 90);
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-size: 100% 100%;
+}
+
+.cs-title-text {
+    --outline: #cc4d00;
+    --outline-width: max(1px, calc(var(--cs) * 3.5));
+    color: #ffcc4d;
+    font-size: max(16px, calc(var(--cs) * 46));
+    letter-spacing: calc(var(--cs) * 1);
+    white-space: nowrap;
+}
+
+.cs-close {
+    position: absolute;
+    top: calc(var(--cs) * -44);
+    right: calc(var(--cs) * -44);
+    width: max(40px, calc(var(--cs) * 112));
+    height: max(40px, calc(var(--cs) * 112));
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 3;
+}
+
+/* ---- Cars ------------------------------------------------------------ */
+
+.cs-cards {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: calc(var(--cs) * 32);
+    height: 100%;
+}
+
+.lui-portrait .cs-cards {
+    grid-auto-flow: row;
+    grid-auto-rows: 1fr;
+    gap: calc(var(--cs) * 28);
+}
+
+.cs-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    min-width: 0;
+    min-height: 0;
+    padding: calc(var(--cs) * 16);
+    border-radius: calc(var(--cs) * 40);
+    background: #ffffff;
+    box-shadow:
+        inset 0 0 0 calc(var(--cs) * 3) #f3e9ff,
+        0 calc(var(--cs) * 7) 0 #ecdcfa,
+        0 calc(var(--cs) * 12) calc(var(--cs) * 22) rgba(140, 90, 190, 0.12);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+}
+
+.lui-portrait .cs-card {
+    flex-direction: row;
+    align-items: center;
+    gap: calc(var(--cs) * 22);
+}
+
+/* The car being driven: a pink ring and the tick. */
+.cs-card[data-mode="selected"] {
+    background: #fff5fa;
+    box-shadow:
+        inset 0 0 0 calc(var(--cs) * 6) #ff8fc4,
+        0 calc(var(--cs) * 7) 0 #f6b6d6,
+        0 0 calc(var(--cs) * 26) rgba(255, 143, 196, 0.45);
+}
+
+.cs-stage {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    border-radius: calc(var(--cs) * 30);
+    background:
+        radial-gradient(ellipse 60% 18% at 50% 82%, rgba(150, 110, 200, 0.22) 0, rgba(150, 110, 200, 0) 100%),
+        radial-gradient(circle at 50% 40%, #ffffff 0, #f1e7ff 75%);
+    overflow: hidden;
+}
+
+.lui-portrait .cs-stage {
+    flex: none;
+    align-self: stretch;
+    width: 46%;
+}
+
+.cs-card[data-mode="selected"] .cs-stage {
+    background:
+        radial-gradient(ellipse 60% 18% at 50% 82%, rgba(220, 100, 160, 0.22) 0, rgba(220, 100, 160, 0) 100%),
+        radial-gradient(circle at 50% 40%, #ffffff 0, #ffe2f0 75%);
+}
+
+.cs-car {
+    position: absolute;
+    inset: 12% 8% 8%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cs-stars {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(var(--cs) * 14);
+    display: flex;
+    justify-content: center;
+}
+
+.cs-star {
+    flex: none;
+    width: calc(var(--cs) * 38);
+    height: calc(var(--cs) * 38);
+}
+
+.cs-star + .cs-star {
+    margin-left: calc(var(--cs) * -4);
+}
+
+.cs-tick {
+    position: absolute;
+    top: calc(var(--cs) * -18);
+    right: calc(var(--cs) * -18);
+    width: calc(var(--cs) * 78);
+    height: calc(var(--cs) * 78);
+    display: none;
+    z-index: 2;
+    filter: drop-shadow(0 calc(var(--cs) * 4) 0 rgba(224, 103, 159, 0.5));
+}
+
+.cs-card[data-mode="selected"] .cs-tick {
+    display: block;
+}
+
+.cs-info {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(var(--cs) * 12);
+    padding-top: calc(var(--cs) * 16);
+}
+
+.lui-portrait .cs-info {
+    flex: 1;
+    padding-top: 0;
+    gap: calc(var(--cs) * 18);
+}
+
+.cs-name {
+    color: var(--cs-ink);
+    font-size: max(16px, calc(var(--cs) * 42));
+    line-height: 1.1;
+    white-space: nowrap;
+}
+
+.lui-portrait .cs-name {
+    font-size: max(16px, calc(var(--cs) * 48));
+}
+
+.cs-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--cs) * 8);
+    min-width: calc(var(--cs) * 210);
+    height: calc(var(--cs) * 74);
+    padding: 0 calc(var(--cs) * 26) calc(var(--cs) * 4);
+    border-radius: calc(var(--cs) * 37);
+    background: linear-gradient(#ffb3d9, #ff8fc4);
+    box-shadow:
+        inset 0 calc(var(--cs) * 3) 0 rgba(255, 255, 255, 0.5),
+        inset 0 calc(var(--cs) * -5) 0 rgba(0, 0, 0, 0.08),
+        0 calc(var(--cs) * 6) 0 #e0679f;
+    color: #ffffff;
+    font-size: max(15px, calc(var(--cs) * 36));
+    text-shadow: 0 calc(var(--cs) * 2) 0 rgba(176, 50, 110, 0.55);
+    white-space: nowrap;
+}
+
+/* For sale: a Lumina price on a lavender pill. */
+.cs-card[data-mode="buy"] .cs-action {
+    background: linear-gradient(#c9a6ff, #a77df0);
+    box-shadow:
+        inset 0 calc(var(--cs) * 3) 0 rgba(255, 255, 255, 0.45),
+        inset 0 calc(var(--cs) * -5) 0 rgba(0, 0, 0, 0.08),
+        0 calc(var(--cs) * 6) 0 #8458cf;
+    text-shadow: 0 calc(var(--cs) * 2) 0 rgba(80, 40, 150, 0.55);
+}
+
+/* Not enough Lumina yet: the price stays readable, just quieter. */
+.cs-card.is-short .cs-action {
+    background: #efe6fa;
+    box-shadow: inset 0 0 0 calc(var(--cs) * 3) #ddcdf3;
+    color: #b29bd0;
+    text-shadow: none;
+}
+
+/* Already owned, ready to drive: a mint pill. */
+.cs-card[data-mode="owned"] .cs-action {
+    background: linear-gradient(#9de8bd, #6fd49b);
+    box-shadow:
+        inset 0 calc(var(--cs) * 3) 0 rgba(255, 255, 255, 0.45),
+        inset 0 calc(var(--cs) * -5) 0 rgba(0, 0, 0, 0.08),
+        0 calc(var(--cs) * 6) 0 #42b077;
+    text-shadow: 0 calc(var(--cs) * 2) 0 rgba(30, 120, 70, 0.5);
+}
+
+.cs-card[data-mode="selected"] .cs-action {
+    background: transparent;
+    box-shadow: none;
+    color: #e0679f;
+    text-shadow: none;
+}
+
+.cs-lumina {
+    flex: none;
+    width: calc(var(--cs) * 48);
+    height: calc(var(--cs) * 48);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* The price and, for the bicycle, the ad button under it. */
+.cs-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(var(--cs) * 12);
+}
+
+/* Upright screens give each card a short row, so a card with both buttons
+   draws its name and buttons a little smaller to keep them inside it. */
+.lui-portrait .cs-card.has-ad .cs-info,
+.lui-portrait .cs-card.has-ad .cs-actions {
+    gap: calc(var(--cs) * 8);
+}
+
+.lui-portrait .cs-card.has-ad .cs-name {
+    font-size: max(15px, calc(var(--cs) * 40));
+}
+
+.lui-portrait .cs-card.has-ad .cs-action {
+    height: calc(var(--cs) * 58);
+    min-width: calc(var(--cs) * 200);
+    font-size: max(14px, calc(var(--cs) * 32));
+}
+
+.lui-portrait .cs-card.has-ad .cs-lumina,
+.lui-portrait .cs-card.has-ad .cs-ad-icon {
+    width: calc(var(--cs) * 40);
+    height: calc(var(--cs) * 40);
+}
+
+.cs-actions > [hidden] {
+    display: none;
+}
+
+/* Watch an ad, keep it for good: a sunny pill with the video icon. Written
+   with .cs-action twice so it wins over the price pill's buy/short looks. */
+.cs-action.cs-ad,
+.cs-card[data-mode="buy"] .cs-action.cs-ad,
+.cs-card.is-short .cs-action.cs-ad {
+    background: linear-gradient(#ffe27a, #ffc23d);
+    box-shadow:
+        inset 0 calc(var(--cs) * 3) 0 rgba(255, 255, 255, 0.55),
+        inset 0 calc(var(--cs) * -5) 0 rgba(0, 0, 0, 0.08),
+        0 calc(var(--cs) * 6) 0 #e0951e;
+    color: #ffffff;
+    text-shadow: 0 calc(var(--cs) * 2) 0 rgba(170, 95, 10, 0.6);
+}
+
+.cs-action.cs-ad.is-off {
+    opacity: 0.5;
+}
+
+.cs-ad-icon {
+    flex: none;
+    width: calc(var(--cs) * 48);
+    height: calc(var(--cs) * 48);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+@media (hover: hover) {
+    .cs-card:not(:disabled) .cs-action.cs-ad:not(.is-off):hover { transform: scale(1.06); }
+}
+
+/* Waiting for the server to answer a tap. */
+.cs-card.is-busy .cs-action {
+    animation: cs-busy 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes cs-busy {
+    from { opacity: 1; }
+    to { opacity: 0.45; }
+}
+
+/* ---- Bought! ---------------------------------------------------------- */
+
+.cs-card.is-new {
+    animation: cs-new 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes cs-new {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.08) rotate(-1.5deg); }
+    65% { transform: scale(0.98) rotate(1deg); }
+    100% { transform: scale(1); }
+}
+
+.cs-burst {
+    position: absolute;
+    left: 50%;
+    top: 42%;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+    z-index: 3;
+}
+
+.cs-spark {
+    position: absolute;
+    left: calc(var(--cs) * -14);
+    top: calc(var(--cs) * -14);
+    width: calc(var(--cs) * 28);
+    height: calc(var(--cs) * 28);
+    background: radial-gradient(circle, #ffffff 0, #fff3a8 35%, rgba(255, 200, 230, 0) 70%);
+    border-radius: 50%;
+    animation: cs-spark 0.9s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+@keyframes cs-spark {
+    0% { transform: rotate(var(--a)) translateY(0) scale(0.4); opacity: 1; }
+    100% { transform: rotate(var(--a)) translateY(calc(var(--cs) * -190 * var(--d))) scale(1.1); opacity: 0; }
+}
+
+/* ---- Hover and press --------------------------------------------------
+   Same feel as the other panels: a soft spring up under the mouse, a quick
+   squash when pressed, hover only where there is a real pointer. */
+
+@media (hover: hover) {
+    .cs-close:hover { transform: scale(1.15); }
+    .cs-card:not(:disabled):hover { transform: scale(1.04); }
+    .cs-card:not(:disabled):hover .cs-car { transform: scale(1.08) rotate(-2deg); }
+}
+
+.cs-close:active,
+.cs-card:active {
+    transition-duration: 0.1s;
+}
+
+.cs-close:active { transform: scale(0.88); }
+.cs-card:not(:disabled):active { transform: scale(0.96); }

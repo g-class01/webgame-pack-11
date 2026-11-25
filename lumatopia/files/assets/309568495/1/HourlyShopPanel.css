@@ -1,0 +1,513 @@
+/* Hourly Shop panel (HourlyShop.js + HourlyShopView.js).
+   Sizes are in shop units: calc(var(--hs) * N). --hs is chosen so the whole
+   window fits the screen with a clear band above and below it for the money
+   and lumina counters, so the panel is centred and as large as that allows.
+   Landscape lays the offers out four
+   across, portrait three across. Font sizes carry a pixel floor so phones
+   never get text smaller than that. Colours are the ones of the authored
+   panel art. The counters use --hud, the HUD's own scale, so they sit
+   exactly where the HUD draws them. */
+
+.hs-overlay {
+    /* Window plus the title bar and close button that hang outside it. The
+       same band is kept clear above and below it, so the panel sits in the
+       middle of the screen and its top never runs into the counters. */
+    --hs-band: calc(var(--hud, 1px) * 80);
+    --hs: min(
+        calc((var(--view-w, 100vw) - 24px) / 834),
+        calc((var(--view-h, 100vh) - var(--hs-band) * 2) / 604)
+    );
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(28, 18, 40, 0.3);
+    pointer-events: auto;
+    touch-action: none;
+}
+
+.lui-portrait .hs-overlay {
+    --hs: min(
+        calc((var(--view-w, 100vw) - 24px) / 662),
+        calc((var(--view-h, 100vh) - var(--hs-band) * 2) / 784)
+    );
+}
+
+.hs-window {
+    position: relative;
+    width: calc(var(--hs) * 746);
+    height: calc(var(--hs) * 560);
+    margin-top: calc(var(--hs) * 44);
+}
+
+.lui-portrait .hs-window {
+    width: calc(var(--hs) * 574);
+    height: calc(var(--hs) * 740);
+}
+
+/* ---- Frame ---------------------------------------------------------- */
+
+.hs-panel {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    padding: calc(var(--hs) * 74) calc(var(--hs) * 40) calc(var(--hs) * 22);
+    border-radius: calc(var(--hs) * 40);
+    background: linear-gradient(#fef5e0, #fef0da);
+    border: calc(var(--hs) * 9) solid #fdd963;
+    box-shadow:
+        0 0 0 calc(var(--hs) * 2) #ec8d52,
+        inset 0 0 0 calc(var(--hs) * 2) #ec8d52,
+        inset 0 0 0 calc(var(--hs) * 4) #f7cca8,
+        0 calc(var(--hs) * 10) calc(var(--hs) * 30) rgba(40, 20, 50, 0.35);
+}
+
+.hs-title {
+    position: absolute;
+    left: 50%;
+    top: calc(var(--hs) * -40);
+    width: calc(var(--hs) * 330);
+    height: calc(var(--hs) * 87);
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-size: 100% 100%;
+}
+
+.hs-title-text {
+    color: #da815c;
+    font-size: max(16px, calc(var(--hs) * 36));
+    white-space: nowrap;
+}
+
+.hs-close {
+    position: absolute;
+    top: calc(var(--hs) * -44);
+    right: calc(var(--hs) * -44);
+    width: max(40px, calc(var(--hs) * 104));
+    height: max(40px, calc(var(--hs) * 104));
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 6;
+}
+
+/* ---- Offers --------------------------------------------------------- */
+
+.hs-grid {
+    display: grid;
+    grid-template-columns: repeat(4, calc(var(--hs) * 150));
+    grid-auto-rows: calc(var(--hs) * 150);
+    column-gap: calc(var(--hs) * 22);
+    row-gap: calc(var(--hs) * 36);
+    justify-content: center;
+}
+
+.lui-portrait .hs-grid {
+    grid-template-columns: repeat(3, calc(var(--hs) * 150));
+}
+
+.hs-cell {
+    position: relative;
+}
+
+.hs-cell.is-selected {
+    z-index: 5;
+}
+
+.hs-slot {
+    position: absolute;
+    /* The slot art is 141 x 150; the cell is square. */
+    inset: 0 calc(var(--hs) * 4.5);
+    background-size: 100% 100%;
+    border-radius: calc(var(--hs) * 20);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s;
+}
+
+.hs-cell.is-selected .hs-slot {
+    box-shadow: 0 0 0 calc(var(--hs) * 5) #f99356;
+}
+
+.hs-stars {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(var(--hs) * -12);
+    display: flex;
+    justify-content: center;
+    z-index: 2;
+}
+
+.hs-star {
+    flex: none;
+    width: calc(var(--hs) * 26);
+    height: calc(var(--hs) * 26);
+}
+
+.hs-star + .hs-star {
+    margin-left: calc(var(--hs) * -3);
+}
+
+.hs-art {
+    position: absolute;
+    left: calc(var(--hs) * 20);
+    right: calc(var(--hs) * 20);
+    top: calc(var(--hs) * 18);
+    bottom: calc(var(--hs) * 22);
+}
+
+.hs-icon,
+.hs-pack-front {
+    position: absolute;
+    inset: 0;
+}
+
+/* The pack's top piece, laid over the pack the way the authored slot has it. */
+.hs-pack-top {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(var(--hs) * -7);
+    height: 57.5%;
+}
+
+.hs-cell[data-kind="shard_pack"] .hs-icon,
+.hs-cell:not([data-kind="shard_pack"]) .hs-pack-front,
+.hs-cell:not([data-kind="shard_pack"]) .hs-pack-top {
+    display: none;
+}
+
+.hs-quantity {
+    --outline: #9a4f2c;
+    --outline-width: calc(var(--hs) * 2);
+    position: absolute;
+    top: calc(var(--hs) * 6);
+    right: calc(var(--hs) * 10);
+    color: #fff;
+    font-size: max(11px, calc(var(--hs) * 28));
+    z-index: 2;
+}
+
+.hs-price {
+    position: absolute;
+    left: calc(var(--hs) * -12);
+    bottom: calc(var(--hs) * -16);
+    display: flex;
+    align-items: center;
+    gap: calc(var(--hs) * 4);
+    z-index: 2;
+}
+
+.hs-price-icon {
+    flex: none;
+    width: calc(var(--hs) * 50);
+    height: calc(var(--hs) * 50);
+}
+
+.hs-price-text {
+    --outline: #000;
+    --outline-width: max(1px, calc(var(--hs) * 2.5));
+    color: #26ff07;
+    font-size: max(12px, calc(var(--hs) * 34));
+    white-space: nowrap;
+}
+
+/* ---- Description card ------------------------------------------------ */
+
+.hs-pop {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: calc(var(--hs) * 330);
+    padding: calc(var(--hs) * 18) calc(var(--hs) * 18) calc(var(--hs) * 52);
+    border-radius: calc(var(--hs) * 20);
+    background: linear-gradient(#fef3da, #fee6c2);
+    border: calc(var(--hs) * 3) solid #f9d5b0;
+    box-shadow: 0 calc(var(--hs) * 8) calc(var(--hs) * 22) rgba(40, 20, 50, 0.3);
+    animation: hs-pop-in 0.14s ease-out;
+    z-index: 3;
+}
+
+/* Offers in the right half open their card to the left, so it stays in the window. */
+.lui-landscape .hs-cell:nth-child(4n + 3) .hs-pop,
+.lui-landscape .hs-cell:nth-child(4n) .hs-pop,
+.lui-portrait .hs-cell:nth-child(3n) .hs-pop {
+    left: auto;
+    right: 50%;
+}
+
+/* Offers below the first row open their card upwards, so it stays clear of
+   the footer and inside the window. */
+.lui-landscape .hs-cell:nth-child(n + 5) .hs-pop,
+.lui-portrait .hs-cell:nth-child(n + 4) .hs-pop {
+    top: auto;
+    bottom: 50%;
+    transform-origin: bottom center;
+}
+
+@keyframes hs-pop-in {
+    from { opacity: 0; transform: scale(0.92); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.hs-pop-desc {
+    color: #da815c;
+    font-size: max(12px, calc(var(--hs) * 23));
+    line-height: 1.2;
+    text-align: center;
+}
+
+.hs-pop-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(var(--hs) * 52);
+    margin-top: calc(var(--hs) * 12);
+    padding: calc(var(--hs) * 6) calc(var(--hs) * 14);
+    border-radius: calc(var(--hs) * 16);
+    background: #b1625c;
+    box-shadow: inset 0 0 0 calc(var(--hs) * 2.5) #ae5546;
+}
+
+.hs-pop-name {
+    color: #fff;
+    font-size: max(13px, calc(var(--hs) * 28));
+    text-align: center;
+    line-height: 1.1;
+}
+
+.hs-pop-actions {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(var(--hs) * -38);
+    display: flex;
+    justify-content: center;
+    gap: calc(var(--hs) * 12);
+}
+
+.hs-buy,
+.hs-ad-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--hs) * 6);
+    height: calc(var(--hs) * 72);
+    padding: 0 calc(var(--hs) * 16) calc(var(--hs) * 4);
+    background-size: 100% 100%;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s;
+}
+
+.hs-buy,
+.hs-free {
+    min-width: calc(var(--hs) * 148);
+}
+
+.hs-buy:disabled,
+.hs-ad-button:disabled { opacity: 0.55; }
+
+.hs-button-text {
+    --outline: #00809a;
+    --outline-width: max(1px, calc(var(--hs) * 2.5));
+    color: #fff;
+    font-size: max(13px, calc(var(--hs) * 30));
+    white-space: nowrap;
+}
+
+.hs-ad-button .hs-button-text {
+    --outline: #1a4d66;
+}
+
+.hs-ad-icon {
+    flex: none;
+    width: calc(var(--hs) * 40);
+    height: calc(var(--hs) * 40);
+}
+
+/* ---- Footer: refresh timer and the rewarded refresh ------------------ */
+
+.hs-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: calc(var(--hs) * 16);
+    margin-top: auto;
+    min-height: calc(var(--hs) * 96);
+    padding: 0 calc(var(--hs) * 8);
+}
+
+.hs-timer {
+    display: flex;
+    align-items: baseline;
+    gap: calc(var(--hs) * 12);
+    color: #da815c;
+    font-size: max(13px, calc(var(--hs) * 32));
+    white-space: nowrap;
+}
+
+.hs-timer-value {
+    min-width: 3.2em;
+}
+
+.hs-refresh {
+    height: calc(var(--hs) * 92);
+    padding: 0 calc(var(--hs) * 26) calc(var(--hs) * 6) calc(var(--hs) * 20);
+}
+
+.hs-refresh .hs-ad-icon {
+    width: calc(var(--hs) * 50);
+    height: calc(var(--hs) * 50);
+}
+
+/* ---- Money and lumina, where the HUD draws them ---------------------- */
+
+.hs-counters {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+/* The HUD is back the moment the shop closes; its own counters take over. */
+.lui-closing .hs-counters {
+    visibility: hidden;
+}
+
+.hs-counter {
+    position: absolute;
+    top: calc(var(--hud, 1px) * 11.5);
+    width: calc(var(--hud, 1px) * 50);
+    height: calc(var(--hud, 1px) * 50);
+}
+
+.hs-counter-money { right: calc(var(--hud, 1px) * 257.5); }
+.hs-counter-lumina { right: calc(var(--hud, 1px) * 134); }
+
+.hs-counter-icon {
+    position: absolute;
+    inset: 0;
+}
+
+.hs-counter-value {
+    --outline: #000;
+    --outline-width: max(1px, calc(var(--hud, 1px) * 2.5));
+    position: absolute;
+    right: calc(100% + var(--hud, 1px) * 5);
+    top: 50%;
+    transform: translateY(calc(-50% + var(--hud, 1px) * 4));
+    font-size: calc(var(--hud, 1px) * 40);
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.hs-counter-money .hs-counter-value { color: #26ff07; }
+.hs-counter-lumina .hs-counter-value { color: #ffcb07; }
+
+.hs-counter-label {
+    --outline: #000;
+    --outline-width: max(1px, calc(var(--hud, 1px) * 2));
+    position: absolute;
+    left: calc(var(--hud, 1px) * 4);
+    top: calc(50% + var(--hud, 1px) * 24);
+    transform: translateY(-50%);
+    color: #fff;
+    font-size: calc(var(--hud, 1px) * 20);
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.hs-toast-error {
+    --outline: #5a1212;
+    color: #ff5c5c;
+}
+
+/* ---- Hover and press --------------------------------------------------
+   Buttons grow with a soft spring under the mouse and squash quickly when
+   pressed. Hover only on devices with a real pointer, so a tap on a phone
+   does not leave a button stuck enlarged. */
+
+@media (hover: hover) {
+    .hs-close:hover { transform: scale(1.15); }
+    .hs-slot:hover { transform: scale(1.08); }
+    .hs-buy:not(:disabled):hover,
+    .hs-ad-button:not(:disabled):hover { transform: scale(1.1); }
+}
+
+.hs-close:active,
+.hs-slot:active,
+.hs-buy:not(:disabled):active,
+.hs-ad-button:not(:disabled):active {
+    transition-duration: 0.1s;
+}
+
+.hs-close:active { transform: scale(0.88); }
+.hs-slot:active { transform: scale(0.94); }
+.hs-buy:not(:disabled):active,
+.hs-ad-button:not(:disabled):active { transform: scale(0.9); }
+
+/* "Drop rates" under a shard pack's description (Poki asks for pack odds to be
+   shown in game). Opens PackManager's panel. */
+.hs-odds {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--hs) * 8);
+    margin: calc(var(--hs) * 10) auto 0;
+    padding: calc(var(--hs) * 4) calc(var(--hs) * 14);
+    border-radius: 99px;
+    background: rgba(218, 129, 92, 0.12);
+    color: #c0623b;
+    font-size: max(12px, calc(var(--hs) * 21));
+}
+
+.hs-odds::before {
+    content: 'i';
+    display: grid;
+    place-items: center;
+    width: calc(var(--hs) * 24);
+    height: calc(var(--hs) * 24);
+    border-radius: 50%;
+    background: #da815c;
+    color: #fff;
+    font-size: max(10px, calc(var(--hs) * 17));
+}
+
+.hs-odds-text {
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+}
+
+/* .hs-ad-button: the button art (180 x 85) keeps its true shape at any width. Its
+   two rounded ends are drawn at the art's own proportions (the left and right
+   halves of the picture), so only the flat middle stretches between them. */
+.hs-ad-button {
+    position: relative;
+    isolation: isolate;
+}
+
+.hs-ad-button::before,
+.hs-ad-button::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    aspect-ratio: 90 / 85;
+    background-image: inherit;
+    background-size: 200% 100%;
+    background-repeat: no-repeat;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.hs-ad-button::before {
+    left: 0;
+    background-position: left center;
+}
+
+.hs-ad-button::after {
+    right: 0;
+    background-position: right center;
+}

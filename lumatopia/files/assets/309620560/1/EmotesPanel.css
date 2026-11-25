@@ -1,0 +1,261 @@
+/* Emote picker (GameManager.js emotes + EmotesView.js).
+   Sizes are in emote units: calc(var(--em) * N). --em is chosen so the whole
+   window, with the title bar and close button that hang outside it, fits the
+   screen, but the picker stays a small menu rather than a full-screen panel.
+   Landscape lays the emotes out three across, portrait two across.
+   Font sizes carry a pixel floor so phones never get text smaller than that.
+   The look is the game's pastel one, as in the other panels. */
+
+.em-overlay {
+    --em: min(
+        calc((var(--view-w, 100vw) - 24px) / 1000),
+        calc((var(--view-h, 100vh) - 24px) / 760),
+        1.1px
+    );
+    --em-ink: #5b3f78;
+    --em-ink-soft: #a08bb8;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(70, 30, 100, 0.18);
+    pointer-events: auto;
+    touch-action: none;
+}
+
+.lui-portrait .em-overlay {
+    --em: min(
+        calc((var(--view-w, 100vw) - 24px) / 720),
+        calc((var(--view-h, 100vh) - 24px) / 1000),
+        1.1px
+    );
+}
+
+.em-window {
+    position: relative;
+    width: calc(var(--em) * 860);
+    height: calc(var(--em) * 600);
+    margin-top: calc(var(--em) * 50);
+}
+
+.lui-portrait .em-window {
+    width: calc(var(--em) * 640);
+    height: calc(var(--em) * 850);
+}
+
+/* ---- Frame ---------------------------------------------------------- */
+
+.em-panel {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: calc(var(--em) * 16);
+    padding: calc(var(--em) * 80) calc(var(--em) * 44) calc(var(--em) * 44);
+    border-radius: calc(var(--em) * 48);
+    background:
+        radial-gradient(circle at 12% 8%, rgba(255, 214, 236, 0.7) 0, rgba(255, 214, 236, 0) calc(var(--em) * 260)),
+        radial-gradient(circle at 92% 96%, rgba(214, 236, 255, 0.7) 0, rgba(214, 236, 255, 0) calc(var(--em) * 300)),
+        linear-gradient(#fffaf6, #fff3f9);
+    border: calc(var(--em) * 9) solid #ffd6ea;
+    box-shadow:
+        0 0 0 calc(var(--em) * 3) #f590c0,
+        inset 0 0 0 calc(var(--em) * 3) #ffb8da,
+        0 calc(var(--em) * 12) calc(var(--em) * 34) rgba(90, 40, 120, 0.35);
+}
+
+.em-title {
+    position: absolute;
+    left: 50%;
+    top: calc(var(--em) * -54);
+    width: calc(var(--em) * 483.5);   /* the title art's 548 x 102 */
+    height: calc(var(--em) * 90);
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-size: 100% 100%;
+}
+
+.em-title-text {
+    --outline: #cc4d00;
+    --outline-width: max(1px, calc(var(--em) * 3.5));
+    color: #ffcc4d;
+    font-size: max(16px, calc(var(--em) * 46));
+    letter-spacing: calc(var(--em) * 1);
+    white-space: nowrap;
+}
+
+.em-close {
+    position: absolute;
+    top: calc(var(--em) * -44);
+    right: calc(var(--em) * -44);
+    width: max(40px, calc(var(--em) * 112));
+    height: max(40px, calc(var(--em) * 112));
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 3;
+}
+
+/* ---- Emotes ---------------------------------------------------------- */
+
+.em-grid {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 1fr;
+    gap: calc(var(--em) * 24) calc(var(--em) * 28);
+}
+
+.lui-portrait .em-grid {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.em-tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--em) * 8);
+    min-width: 0;
+    min-height: 0;
+    padding: calc(var(--em) * 12) calc(var(--em) * 8) calc(var(--em) * 14);
+    border-radius: calc(var(--em) * 36);
+    background: #ffffff;
+    box-shadow:
+        inset 0 0 0 calc(var(--em) * 3) #f3e9ff,
+        0 calc(var(--em) * 6) 0 #ecdcfa,
+        0 calc(var(--em) * 10) calc(var(--em) * 18) rgba(140, 90, 190, 0.12);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s, opacity 0.2s;
+}
+
+/* Playing right now (a held heart, sitting, waiting for a high five). */
+.em-tile.is-active {
+    background: #fff5fa;
+    box-shadow:
+        inset 0 0 0 calc(var(--em) * 5) #ff8fc4,
+        0 calc(var(--em) * 6) 0 #f6b6d6,
+        0 0 calc(var(--em) * 22) rgba(255, 143, 196, 0.45);
+}
+
+.em-tile:disabled {
+    opacity: 0.5;
+}
+
+.em-tile.is-busy {
+    opacity: 1;
+    animation: none;
+}
+
+.em-tile.is-busy .em-ad {
+    animation: em-busy 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes em-busy {
+    from { opacity: 1; }
+    to { opacity: 0.45; }
+}
+
+.em-bubble {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    aspect-ratio: 1;
+    max-width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ffffff 0, #f3e9ff 80%);
+}
+
+.em-tile.is-active .em-bubble {
+    background: radial-gradient(circle at 35% 30%, #ffffff 0, #ffe2f0 80%);
+}
+
+.em-icon {
+    width: 92%;
+    height: 92%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.em-label {
+    flex: none;
+    max-width: 100%;
+    color: var(--em-ink);
+    font-size: max(13px, calc(var(--em) * 30));
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Rewarded unlock: the film badge with its little lock, and "Free". */
+.em-ad {
+    position: absolute;
+    top: calc(var(--em) * -14);
+    right: calc(var(--em) * -12);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 2;
+}
+
+.em-ad-icon {
+    width: calc(var(--em) * 70);
+    height: calc(var(--em) * 70);
+    transform: rotate(8deg);
+}
+
+.em-ad-lock {
+    position: absolute;
+    left: calc(var(--em) * -12);
+    top: calc(var(--em) * -6);
+    width: calc(var(--em) * 34);
+    height: calc(var(--em) * 34);
+}
+
+.em-free {
+    margin-top: calc(var(--em) * -10);
+    padding: 0 calc(var(--em) * 10);
+    border-radius: calc(var(--em) * 14);
+    background: #ff8fc4;
+    box-shadow: 0 calc(var(--em) * 3) 0 #e0679f;
+    color: #ffffff;
+    font-size: max(10px, calc(var(--em) * 20));
+    white-space: nowrap;
+}
+
+.em-note {
+    flex: none;
+    color: var(--em-ink-soft);
+    font-size: max(12px, calc(var(--em) * 26));
+    text-align: center;
+}
+
+/* ---- Hover and press --------------------------------------------------
+   Same feel as the other panels: a soft spring up under the mouse, a quick
+   squash when pressed, hover only where there is a real pointer. */
+
+@media (hover: hover) {
+    .em-close:hover { transform: scale(1.15); }
+    .em-tile:not(:disabled):hover { transform: scale(1.06); }
+    .em-tile:not(:disabled):hover .em-icon { transform: scale(1.1) rotate(-6deg); }
+}
+
+.em-close:active,
+.em-tile:active {
+    transition-duration: 0.1s;
+}
+
+.em-close:active { transform: scale(0.88); }
+.em-tile:not(:disabled):active { transform: scale(0.93); }

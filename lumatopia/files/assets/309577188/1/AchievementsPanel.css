@@ -1,0 +1,598 @@
+/* Achievement journal (Achievements.js + AchievementsView.js).
+   Sizes are in journal units: calc(var(--ac) * N). --ac is chosen so the
+   whole window, with the title bar and close button that hang outside it,
+   fills the screen. Landscape keeps the category tabs down the left and
+   three cards across; portrait puts the tabs in a block on top and two
+   cards across. Font sizes carry a pixel floor so phones never get text
+   smaller than that.
+
+   The look is the game's pastel one: a pink-and-lilac frame, tabs in their
+   own category colours, white bubble cards whose icon sits in a soft circle
+   of the open category's colour, star pips for tiers and candy-striped bars.
+   The state colours (--ac-card-complete and friends) are set by the script
+   from its Inspector attributes. */
+
+.ac-overlay {
+    --ac: min(
+        calc((var(--view-w, 100vw) - 24px) / 1268),
+        calc((var(--view-h, 100vh) - 24px) / 910)
+    );
+    --ac-card-complete: #edf7e6;
+    --ac-dot-earned: #facc4a;
+    --ac-claim-ready: #ffffff;
+    --ac-claimed: #cccccc;
+    --ac-claimed-opacity: 0.55;
+    --ac-claim-text: #fff7e0;
+    --ac-description: #523d29;
+    --ac-ink: #5b3f78;
+    --ac-ink-soft: #a08bb8;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(70, 30, 100, 0.42);
+    pointer-events: auto;
+    touch-action: none;
+}
+
+.lui-portrait .ac-overlay {
+    --ac: min(
+        calc((var(--view-w, 100vw) - 24px) / 948),
+        calc((var(--view-h, 100vh) - 24px) / 1750)
+    );
+}
+
+.ac-window {
+    position: relative;
+    width: calc(var(--ac) * 1180);
+    height: calc(var(--ac) * 860);
+    margin-top: calc(var(--ac) * 50);
+}
+
+.lui-portrait .ac-window {
+    width: calc(var(--ac) * 860);
+    height: calc(var(--ac) * 1700);
+}
+
+/* ---- Frame ---------------------------------------------------------- */
+
+.ac-panel {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--ac) * 14);
+    padding: calc(var(--ac) * 78) calc(var(--ac) * 34) calc(var(--ac) * 20);
+    border-radius: calc(var(--ac) * 48);
+    background:
+        radial-gradient(circle at 12% 8%, rgba(255, 214, 236, 0.7) 0, rgba(255, 214, 236, 0) calc(var(--ac) * 260)),
+        radial-gradient(circle at 92% 96%, rgba(214, 236, 255, 0.7) 0, rgba(214, 236, 255, 0) calc(var(--ac) * 300)),
+        linear-gradient(#fffaf6, #fff3f9);
+    border: calc(var(--ac) * 9) solid #ffd6ea;
+    box-shadow:
+        0 0 0 calc(var(--ac) * 3) #f590c0,
+        inset 0 0 0 calc(var(--ac) * 3) #ffb8da,
+        0 calc(var(--ac) * 12) calc(var(--ac) * 34) rgba(90, 40, 120, 0.35);
+}
+
+.ac-title {
+    position: absolute;
+    left: 50%;
+    top: calc(var(--ac) * -56);
+    width: calc(var(--ac) * 520);
+    height: calc(var(--ac) * 97);
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-size: 100% 100%;
+}
+
+.ac-title-text {
+    --outline: #cc4d00;
+    --outline-width: max(1px, calc(var(--ac) * 3.5));
+    color: #ffcc4d;
+    font-size: max(16px, calc(var(--ac) * 48));
+    letter-spacing: calc(var(--ac) * 1);
+    white-space: nowrap;
+}
+
+/* The journal's overall count, as a little star badge. */
+.ac-total {
+    position: absolute;
+    top: calc(var(--ac) * 20);
+    right: calc(var(--ac) * 96);
+    display: flex;
+    align-items: center;
+    gap: calc(var(--ac) * 8);
+    padding: calc(var(--ac) * 4) calc(var(--ac) * 18) calc(var(--ac) * 4) calc(var(--ac) * 8);
+    border-radius: calc(var(--ac) * 30);
+    background: #c9a6ff;
+    box-shadow: inset 0 calc(var(--ac) * -4) 0 rgba(90, 40, 160, 0.18), 0 calc(var(--ac) * 3) 0 rgba(150, 100, 210, 0.35);
+}
+
+.ac-total-star {
+    width: calc(var(--ac) * 40);
+    height: calc(var(--ac) * 40);
+}
+
+.ac-total-text {
+    color: #fff;
+    font-size: max(13px, calc(var(--ac) * 30));
+    text-shadow: 0 calc(var(--ac) * 2) 0 rgba(90, 40, 160, 0.45);
+}
+
+.ac-close {
+    position: absolute;
+    top: calc(var(--ac) * -44);
+    right: calc(var(--ac) * -44);
+    width: max(40px, calc(var(--ac) * 112));
+    height: max(40px, calc(var(--ac) * 112));
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 3;
+}
+
+.ac-body {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: calc(var(--ac) * 260) 1fr;
+    column-gap: calc(var(--ac) * 24);
+}
+
+.lui-portrait .ac-body {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    row-gap: calc(var(--ac) * 18);
+}
+
+/* ---- Category tabs -------------------------------------------------- */
+
+.ac-rail {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--ac) * 12);
+    padding: calc(var(--ac) * 14) calc(var(--ac) * 14) calc(var(--ac) * 12) calc(var(--ac) * 4);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    scrollbar-width: none;
+}
+
+.lui-portrait .ac-rail {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    overflow: visible;
+}
+
+.ac-tab {
+    position: relative;
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: calc(var(--ac) * 74);
+    padding: calc(var(--ac) * 8) calc(var(--ac) * 20);
+    border-radius: calc(var(--ac) * 26);
+    background: var(--ac-tab-soft, #efe3ff);
+    box-shadow:
+        inset 0 calc(var(--ac) * -5) 0 rgba(0, 0, 0, 0.06),
+        0 calc(var(--ac) * 4) 0 var(--ac-tab-color, #c9a6ff);
+    text-align: left;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s, box-shadow 0.2s;
+}
+
+.ac-tab.is-active {
+    background: var(--ac-tab-color, #c9a6ff);
+    box-shadow:
+        inset 0 0 0 calc(var(--ac) * 4) rgba(255, 255, 255, 0.85),
+        inset 0 calc(var(--ac) * -6) 0 rgba(0, 0, 0, 0.08),
+        0 calc(var(--ac) * 5) 0 var(--ac-tab-deep, #7a4aa8);
+}
+
+.ac-tab-label {
+    --outline: transparent;
+    --outline-width: 0px;
+    color: var(--ac-ink);
+    font-size: max(13px, calc(var(--ac) * 30));
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ac-tab.is-active .ac-tab-label {
+    --outline: var(--ac-tab-deep, #7a4aa8);
+    --outline-width: max(1px, calc(var(--ac) * 2.5));
+    color: #fff;
+    padding: 0 calc(var(--ac) * 3);
+}
+
+.ac-tab-count {
+    color: var(--ac-ink-soft);
+    font-size: max(11px, calc(var(--ac) * 24));
+    line-height: 1.1;
+}
+
+.ac-tab.is-active .ac-tab-count {
+    color: #fff;
+    opacity: 0.9;
+}
+
+.ac-tab .lui-dot,
+.ac-card .lui-dot {
+    top: calc(var(--ac) * -8);
+    right: calc(var(--ac) * -6);
+    width: max(16px, calc(var(--ac) * 34));
+    height: max(16px, calc(var(--ac) * 34));
+    font-size: max(11px, calc(var(--ac) * 24));
+    line-height: max(16px, calc(var(--ac) * 34));
+}
+
+/* ---- Category header and cards ------------------------------------- */
+
+.ac-content {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--ac) * 12);
+}
+
+.ac-header {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--ac) * 8);
+    padding: 0 calc(var(--ac) * 8);
+}
+
+.ac-header-line {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+.ac-category-name {
+    color: var(--ac-ink);
+    font-size: max(14px, calc(var(--ac) * 40));
+}
+
+.ac-category-count {
+    color: var(--ac-ink-soft);
+    font-size: max(13px, calc(var(--ac) * 32));
+}
+
+.ac-header-track,
+.ac-card-track {
+    position: relative;
+    overflow: hidden;
+    background: #f1e6fb;
+    box-shadow: inset 0 calc(var(--ac) * 2) calc(var(--ac) * 3) rgba(120, 80, 160, 0.12);
+}
+
+.ac-header-track {
+    height: calc(var(--ac) * 18);
+    border-radius: calc(var(--ac) * 9);
+}
+
+.ac-header-fill,
+.ac-card-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    border-radius: inherit;
+    /* One stripe repeat, so the tiles meet without a seam: 45-degree stripes
+       14 units apart repeat every 14 * sqrt(2) units across. */
+    --ac-stripe: calc(var(--ac) * 19.799);
+    background-size: var(--ac-stripe) var(--ac-stripe), 100% 100%;
+    animation: ac-candy 0.9s linear infinite;
+    transition: width 0.5s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+
+/* Candy stripes: a pink-to-lilac bar for the category, mint for each card. */
+.ac-header-fill {
+    background-image:
+        repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.28) 0 calc(var(--ac) * 7), transparent 0 calc(var(--ac) * 14)),
+        linear-gradient(90deg, #ff9fcf, #c79bff);
+}
+
+.ac-card-fill {
+    background-image:
+        repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.3) 0 calc(var(--ac) * 7), transparent 0 calc(var(--ac) * 14)),
+        linear-gradient(90deg, #8be6b0, #4fcf8e);
+}
+
+@keyframes ac-candy {
+    from { background-position: 0 0, 0 0; }
+    to { background-position: var(--ac-stripe) 0, 0 0; }
+}
+
+.ac-grid {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: max-content;
+    gap: calc(var(--ac) * 18);
+    padding: calc(var(--ac) * 10) calc(var(--ac) * 8) calc(var(--ac) * 14);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    scrollbar-width: thin;
+    scrollbar-color: #f2a8d0 transparent;
+}
+
+.lui-portrait .ac-grid {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.ac-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(var(--ac) * 4);
+    padding: calc(var(--ac) * 10) calc(var(--ac) * 12) calc(var(--ac) * 12);
+    border-radius: calc(var(--ac) * 28);
+    background: #ffffff;
+    box-shadow:
+        inset 0 0 0 calc(var(--ac) * 3) #f6ecff,
+        0 calc(var(--ac) * 5) 0 #ecdcfa,
+        0 calc(var(--ac) * 8) calc(var(--ac) * 16) rgba(140, 90, 190, 0.12);
+    transition: background-color 0.3s;
+}
+
+.ac-card.is-finished {
+    background: var(--ac-card-complete);
+    box-shadow:
+        inset 0 0 0 calc(var(--ac) * 3) rgba(255, 255, 255, 0.7),
+        0 calc(var(--ac) * 5) 0 #cfe8c4,
+        0 calc(var(--ac) * 8) calc(var(--ac) * 16) rgba(90, 150, 90, 0.12);
+}
+
+.ac-icon-bubble {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: calc(var(--ac) * 86);
+    height: calc(var(--ac) * 86);
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ffffff 0, var(--ac-cat-soft, #efe3ff) 70%);
+    box-shadow: inset 0 0 0 calc(var(--ac) * 3) var(--ac-cat-soft, #efe3ff);
+}
+
+.ac-icon {
+    width: calc(var(--ac) * 72);
+    height: calc(var(--ac) * 72);
+    background-repeat: no-repeat;
+}
+
+.ac-card-title {
+    color: var(--ac-ink);
+    font-size: max(12px, calc(var(--ac) * 27));
+    line-height: 1.1;
+    text-align: center;
+}
+
+.ac-card-progress {
+    color: var(--ac-ink-soft);
+    font-size: max(11px, calc(var(--ac) * 22));
+}
+
+.ac-card-track {
+    width: 80%;
+    height: calc(var(--ac) * 14);
+    border-radius: calc(var(--ac) * 7);
+}
+
+/* Tier pips are little stars. */
+.ac-dots {
+    display: flex;
+    gap: calc(var(--ac) * 6);
+    margin: calc(var(--ac) * 1) 0 calc(var(--ac) * 3);
+}
+
+.ac-dot {
+    width: calc(var(--ac) * 26);
+    height: calc(var(--ac) * 26);
+    background: #ecdff7;
+    clip-path: polygon(50% 0%, 61.8% 35.4%, 100% 35.4%, 69.1% 57.3%, 80.9% 95.1%, 50% 72.4%, 19.1% 95.1%, 30.9% 57.3%, 0% 35.4%, 38.2% 35.4%);
+    transition: background-color 0.3s, transform 0.3s cubic-bezier(0.34, 1.8, 0.64, 1);
+}
+
+.ac-dot.is-earned {
+    background: var(--ac-dot-earned);
+    transform: scale(1.12);
+}
+
+.ac-reward {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* The claim art is 308 x 85; the box keeps that shape. */
+    width: calc(var(--ac) * 220);
+    max-width: 100%;
+    height: calc(var(--ac) * 60.71);
+    padding: 0 calc(var(--ac) * 10) calc(var(--ac) * 4);
+    background-size: 100% 100%;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s;
+}
+
+/* Only a claimable pill takes input; the others let a tap through to the
+   card, which shows its description. */
+.ac-reward:disabled {
+    pointer-events: none;
+}
+
+.ac-reward-text {
+    --outline: #2e8a12;
+    --outline-width: max(1px, calc(var(--ac) * 2));
+    color: #ffffff;
+    font-size: max(11px, calc(var(--ac) * 21));
+    white-space: nowrap;
+}
+
+.ac-card[data-reward="claim"] .ac-reward-text {
+    --outline: #2e6b12;
+    --outline-width: max(1px, calc(var(--ac) * 2.5));
+    color: var(--ac-claim-text);
+    font-size: max(13px, calc(var(--ac) * 28));
+}
+
+/* An unfinished tier's payout: money and Lumina amounts by their icons. */
+.ac-payout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--ac) * 14);
+}
+
+.ac-payout-part {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--ac) * 4);
+}
+
+.ac-payout-icon {
+    flex: none;
+    width: calc(var(--ac) * 34);
+    height: calc(var(--ac) * 34);
+    filter: drop-shadow(0 calc(var(--ac) * 1) 0 rgba(30, 90, 10, 0.5));
+}
+
+.ac-payout-text {
+    --outline: #2e8a12;
+    --outline-width: max(1px, calc(var(--ac) * 2));
+    color: #ffffff;
+    font-size: max(12px, calc(var(--ac) * 25));
+    white-space: nowrap;
+}
+
+/* A tier still in progress only previews its payout: a soft chip, not the
+   green button, so only a reward that can really be claimed looks pressable. */
+.ac-card[data-reward="idle"] .ac-reward {
+    background-image: none !important;
+    background-color: #f5eeff;
+    border-radius: calc(var(--ac) * 30);
+    box-shadow: inset 0 0 0 calc(var(--ac) * 2.5) #e6d6fa;
+    padding-bottom: 0;
+}
+
+.ac-card[data-reward="idle"] .ac-payout-text {
+    --outline: transparent;
+    --outline-width: 0px;
+    color: var(--ac-ink);
+}
+
+.ac-card[data-reward="idle"] .ac-payout-icon {
+    filter: none;
+}
+
+/* A claimable pill breathes, so the cards waiting on a claim are the ones
+   that catch the eye. */
+.ac-card[data-reward="claim"] .ac-reward {
+    animation: ac-claim-breathe 1.4s ease-in-out infinite;
+}
+
+@keyframes ac-claim-breathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+}
+
+/* A spent tier is the one state that fades, as authored (Reward Claimed and
+   Reward Claimed Opacity on the script). */
+.ac-card[data-reward="claimed"] .ac-reward {
+    opacity: var(--ac-claimed-opacity);
+    filter: grayscale(0.5) brightness(0.9);
+}
+
+.ac-card[data-reward="claimed"] .ac-reward-text {
+    color: var(--ac-claim-text);
+}
+
+/* Portrait cards are wider (two across), so their text can be larger. */
+.lui-portrait .ac-icon-bubble { width: calc(var(--ac) * 116); height: calc(var(--ac) * 116); }
+.lui-portrait .ac-icon { width: calc(var(--ac) * 96); height: calc(var(--ac) * 96); }
+.lui-portrait .ac-card-title { font-size: max(13px, calc(var(--ac) * 36)); }
+.lui-portrait .ac-card-progress { font-size: max(12px, calc(var(--ac) * 30)); }
+.lui-portrait .ac-card-track { height: calc(var(--ac) * 18); }
+.lui-portrait .ac-dot { width: calc(var(--ac) * 34); height: calc(var(--ac) * 34); }
+.lui-portrait .ac-reward { width: calc(var(--ac) * 300); height: calc(var(--ac) * 82.79); }
+.lui-portrait .ac-reward-text { font-size: max(12px, calc(var(--ac) * 28)); }
+.lui-portrait .ac-payout-icon { width: calc(var(--ac) * 44); height: calc(var(--ac) * 44); }
+.lui-portrait .ac-payout-text { font-size: max(12px, calc(var(--ac) * 32)); }
+.lui-portrait .ac-card[data-reward="claim"] .ac-reward-text { font-size: max(13px, calc(var(--ac) * 36)); }
+.lui-portrait .ac-tab-label { font-size: max(13px, calc(var(--ac) * 32)); }
+.lui-portrait .ac-tab { padding: calc(var(--ac) * 8) calc(var(--ac) * 14); }
+.lui-portrait .ac-tip { font-size: max(12px, calc(var(--ac) * 30)); }
+
+/* ---- Footer: tip, or the description of the card under the cursor ---- */
+
+.ac-tip {
+    flex: none;
+    min-height: calc(var(--ac) * 40);
+    color: var(--ac-ink-soft);
+    font-size: max(12px, calc(var(--ac) * 25));
+    line-height: 1.2;
+    text-align: center;
+}
+
+.ac-tip::before,
+.ac-tip::after {
+    content: '\2726';
+    margin: 0 calc(var(--ac) * 10);
+    color: #f59ac6;
+}
+
+.ac-tip.is-description {
+    color: var(--ac-description);
+}
+
+/* ---- Lumina flying to the HUD --------------------------------------- */
+
+.ac-flights {
+    position: absolute;
+    inset: 0;
+    z-index: 30;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.ac-fly {
+    position: absolute;
+    left: 0;
+    top: 0;
+    will-change: transform, opacity;
+}
+
+/* ---- Hover and press --------------------------------------------------
+   Same feel as the other panels: a soft spring up under the mouse, a quick
+   squash when pressed, hover only where there is a real pointer. */
+
+@media (hover: hover) {
+    .ac-close:hover { transform: scale(1.15); }
+    .ac-tab:hover { transform: scale(1.05); z-index: 2; }
+    .ac-reward:not(:disabled):hover { transform: scale(1.1); animation: none; }
+}
+
+.ac-close:active,
+.ac-tab:active,
+.ac-reward:not(:disabled):active {
+    transition-duration: 0.1s;
+}
+
+.ac-close:active { transform: scale(0.88); }
+.ac-tab:active { transform: scale(0.95); }
+.ac-reward:not(:disabled):active { transform: scale(0.9); animation: none; }
+
+@media (prefers-reduced-motion: reduce) {
+    .ac-card[data-reward="claim"] .ac-reward,
+    .ac-header-fill,
+    .ac-card-fill { animation: none; }
+}

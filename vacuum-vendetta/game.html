@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <script>window.open = function () {}; window.NOSW = true;</script>
+<script src="poki-sdk.js"></script>
+    <meta charset="UTF-8" />
+    <!-- Pagina nascosta prima che il gioco si veda (scheda aperta in background, o lasciata durante il caricamento):
+         l'attesa fino al primo disegno non conta (evento load, vedi measureLoad in src/meta/measure.ts). Si segue da
+         qui, in cima alla head, perché questo script parte prima del gioco e degli script dei portali. -->
+    <script>
+      window.__hiddenBeforeFirstFrame = document.hidden
+      document.addEventListener('visibilitychange', function () {
+        if (document.hidden) window.__hiddenBeforeFirstFrame = true
+      })
+    </script>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <meta name="theme-color" content="#121218" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Vacuum Vendetta</title>
+    <!-- Cerchio di caricamento finché il gioco non parte (lo toglie main.ts): qui, perché style.css arriva con lo script. -->
+    <style>#boot{background:#111;place-items:center;display:grid;position:fixed;inset:0}#boot:after{content:"";border:5px solid #ffffff26;border-top-color:#ff9f1c;border-radius:50%;width:44px;height:44px;animation:.8s linear infinite boot-spin}@keyframes boot-spin{to{transform:rotate(360deg)}}#boot button{color:#111;cursor:pointer;background:#ff9f1c;border:0;border-radius:999px;padding:10px 22px;font:700 18px system-ui,sans-serif;position:absolute;top:calc(50% + 48px);left:50%;transform:translate(-50%)}</style>
+    <script type="module" crossorigin src="./assets/index-CmpGAQ7u.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/three.module-0wGMnCvG.js">
+    <link rel="modulepreload" crossorigin href="./assets/en-VegrbuiE.js">
+    <link rel="stylesheet" crossorigin href="./assets/index-C-hdf_Zr.css">
+  </head>
+  <body>
+    <div id="boot" aria-hidden="true"></div>
+    <!-- Il cerchio gira ancora dopo 20 secondi (rete piantata, browser troppo vecchio, avvio caduto): sotto compare un
+         pulsante per ricaricare, nella lingua del browser. JavaScript vecchio apposta: deve funzionare anche dove il
+         gioco non parte. -->
+    <script>
+      setTimeout(function () {
+        var boot = document.getElementById('boot')
+        if (!boot) return
+        var words = { it: 'Ricarica', es: 'Recargar', pt: 'Recarregar', fr: 'Recharger', de: 'Neu laden' }
+        var button = document.createElement('button')
+        button.type = 'button'
+        button.textContent = '🔄 ' + (words[(navigator.language || '').slice(0, 2).toLowerCase()] || 'Reload')
+        button.onclick = function () {
+          location.reload()
+        }
+        boot.removeAttribute('aria-hidden')
+        boot.appendChild(button)
+      }, 20000)
+    </script>
+    <div id="hud" hidden>
+      <!-- Bordi dello schermo scuriti mentre si è in modalità furtiva. -->
+      <div id="stealth-vignette"></div>
+      <div class="hud-top">
+        <div class="panel hud-left">
+          <button id="hud-left-toggle" class="panel-toggle" type="button"></button>
+          <div id="level-name" class="subtle"></div>
+          <div id="chaos"></div>
+          <div id="loot"></div>
+          <div id="timer" class="subtle"></div>
+          <button id="extra-time" class="small ad" type="button" hidden></button>
+          <div id="boosts" class="chips"></div>
+          <ul id="objectives-list" class="hud-objectives"></ul>
+        </div>
+
+        <div class="panel hud-power">
+          <div class="bar-label"><span id="power-label"></span><span id="power-next"></span></div>
+          <div class="bar"><div id="power-fill" class="fill power"></div></div>
+        </div>
+
+        <div class="panel hud-right">
+          <button id="hud-right-toggle" class="panel-toggle" type="button"></button>
+          <div class="bar-label"><span id="alert-label"></span><span id="alert-pct">0%</span></div>
+          <div class="bar"><div id="alert-fill" class="fill alert"></div></div>
+          <div class="bar-label"><span id="clean-label"></span><span id="clean-pct">0%</span></div>
+          <div class="bar thin goal"><div id="clean-fill" class="fill clean"></div><div id="clean-goal" class="goal-mark"></div></div>
+          <ul id="family-list"></ul>
+        </div>
+
+        <!-- Suggerimenti del tutorial e consigli: una riga intera sotto i pannelli. -->
+        <div id="coach" hidden>
+          <span id="coach-icon"></span>
+          <span id="coach-text"></span>
+          <span id="coach-buttons">
+            <button id="coach-skip" class="small secondary" type="button"></button>
+            <button id="coach-login" class="small secondary" type="button" hidden></button>
+          </span>
+        </div>
+      </div>
+
+      <div id="status-chip" hidden></div>
+      <!-- Primi livelli: il sospetto in grande sotto il robot, con cosa fare. -->
+      <div id="alert-meter" hidden><div id="alert-meter-text"></div><div class="alert-meter-bar"><i id="alert-meter-fill"></i></div></div>
+      <!-- Tutorial: freccia a bordo schermo verso la cosa da aspirare quando è fuori vista. -->
+      <div id="guide-pointer" hidden></div>
+      <!-- Casa 1-2: come ci si muove, senza parole (mano che trascina sul telefono, tasti freccia e mano sul computer). -->
+      <div id="move-hint" hidden aria-hidden="true">
+        <div class="drag"><i class="knob"></i><i class="hand">👆</i></div>
+        <div class="keys"><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div id="stealth-chip" hidden><span>🤫</span><b id="stealth-label"></b><i><em id="stealth-fill"></em></i></div>
+      <div id="toasts"></div>
+      <div id="banner"></div>
+      <!-- Obiettivi in grande a inizio partita, poi restano in piccolo nel pannello a sinistra. -->
+      <div id="objectives-intro"></div>
+      <div id="hint" class="hint"></div>
+
+      <!-- Sala giochi: tempo, punti e combo al posto dei pannelli del livello. -->
+      <div id="arcade-hud" hidden>
+        <div class="arcade-time"><span id="arcade-time"></span></div>
+        <div class="arcade-score"><b id="arcade-score">0</b><small id="arcade-best"></small></div>
+        <div id="arcade-combo" class="arcade-combo"><b id="arcade-mult">×1</b><span id="arcade-combo-count"></span><i><em id="arcade-combo-fill"></em></i></div>
+        <div id="arcade-status" hidden></div>
+        <div id="arcade-notice" hidden></div>
+        <div id="arcade-popups"></div>
+        <div id="arcade-count"></div>
+      </div>
+
+      <!-- Comandi a schermo: visibili solo su telefoni e tablet (classe "touch" su body). -->
+      <div id="touch">
+        <div id="stick"><div id="stick-knob"></div></div>
+        <button id="touch-pause" class="touch-button" type="button">⏸</button>
+        <button id="touch-view" class="touch-button" type="button">🎥<small></small></button>
+        <button id="touch-sneak" class="touch-button" type="button">🤫<small></small></button>
+      </div>
+    </div>
+
+    <div id="overlay" hidden>
+      <div id="overlay-card" class="card"></div>
+    </div>
+
+    <!-- Promemoria "il piano" prima della prima partita di ogni sessione: il livello parte con Via!. -->
+    <div id="plan-card" hidden></div>
+
+  </body>
+</html>

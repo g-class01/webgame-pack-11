@@ -1,0 +1,565 @@
+/* Chest randomizer (ChestInteractable.js + ChestRouletteView.js).
+   Sizes are in randomizer units: calc(var(--cr) * N). --cr is chosen so the
+   whole window, with the title bar that hangs over it, fills the screen: the
+   point is that players can really see each piece. A big strip spins under
+   a fixed marker; below it every piece this chest can give is laid out with
+   its chance, ticked when the player already has it.
+   Taps pass through: the panel only shows, the game keeps its input.
+   Font sizes carry a pixel floor so phones never get text smaller than that.
+   The look is the game's pastel one, as in the other panels. */
+
+.cr-overlay {
+    --cr: min(
+        calc((var(--view-w, 100vw) - 24px) / 1300),
+        calc((var(--view-h, 100vh) - 24px) / 850)
+    );
+    --cr-ink: #5b3f78;
+    --cr-ink-soft: #a08bb8;
+    --cr-card-w: calc(var(--cr) * 172);
+    --cr-card-h: calc(var(--cr) * 206);
+    --cr-gap: calc(var(--cr) * 20);
+    --cr-pitch: calc(var(--cr-card-w) + var(--cr-gap));
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(70, 30, 100, 0.22);
+    pointer-events: none;
+}
+
+.lui-portrait .cr-overlay {
+    --cr: min(
+        calc((var(--view-w, 100vw) - 24px) / 860),
+        calc((var(--view-h, 100vh) - 24px) / 1340)
+    );
+}
+
+.cr-overlay * {
+    pointer-events: none !important;
+}
+
+.cr-window {
+    position: relative;
+    width: calc(var(--cr) * 1240);
+    height: calc(var(--cr) * 770);
+    margin-top: calc(var(--cr) * 50);
+}
+
+.lui-portrait .cr-window {
+    width: calc(var(--cr) * 820);
+    height: calc(var(--cr) * 1260);
+}
+
+/* ---- Frame ---------------------------------------------------------- */
+
+.cr-panel {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--cr) * 16);
+    padding: calc(var(--cr) * 66) calc(var(--cr) * 32) calc(var(--cr) * 28);
+    border-radius: calc(var(--cr) * 48);
+    background:
+        radial-gradient(circle at 12% 8%, rgba(255, 214, 236, 0.7) 0, rgba(255, 214, 236, 0) calc(var(--cr) * 260)),
+        radial-gradient(circle at 92% 96%, rgba(214, 236, 255, 0.7) 0, rgba(214, 236, 255, 0) calc(var(--cr) * 300)),
+        linear-gradient(#fffaf6, #fff3f9);
+    border: calc(var(--cr) * 9) solid #ffd6ea;
+    box-shadow:
+        0 0 0 calc(var(--cr) * 3) #f590c0,
+        inset 0 0 0 calc(var(--cr) * 3) #ffb8da,
+        0 calc(var(--cr) * 12) calc(var(--cr) * 34) rgba(90, 40, 120, 0.35);
+}
+
+.cr-title {
+    position: absolute;
+    left: 50%;
+    top: calc(var(--cr) * -54);
+    width: calc(var(--cr) * 483.5);   /* the title art's 548 x 102 */
+    height: calc(var(--cr) * 90);
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-size: 100% 100%;
+}
+
+.cr-title-text {
+    --outline: #cc4d00;
+    --outline-width: max(1px, calc(var(--cr) * 3.5));
+    color: #ffcc4d;
+    font-size: max(16px, calc(var(--cr) * 46));
+    letter-spacing: calc(var(--cr) * 1);
+    white-space: nowrap;
+}
+
+/* ---- Rarity colours -------------------------------------------------- */
+
+[data-rarity="Common"] { --rar: #f2eef7; --rar-ring: #cfc5de; --rar-deep: #8f84a3; }
+[data-rarity="Uncommon"] { --rar: #def7e3; --rar-ring: #84d99d; --rar-deep: #3f9e5c; }
+[data-rarity="Rare"] { --rar: #dbebff; --rar-ring: #7cb6f5; --rar-deep: #3a7fd0; }
+[data-rarity="Epic"] { --rar: #efe0ff; --rar-ring: #bb8cf1; --rar-deep: #8a4fd0; }
+[data-rarity="Legendary"] { --rar: #fff0d0; --rar-ring: #f6b94e; --rar-deep: #c27812; }
+
+/* ---- Chest rarity and collection count ------------------------------- */
+
+.cr-head {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: calc(var(--cr) * 20);
+    min-height: calc(var(--cr) * 58);
+}
+
+.cr-chest-rarity {
+    padding: calc(var(--cr) * 6) calc(var(--cr) * 26);
+    border-radius: calc(var(--cr) * 26);
+    background: var(--rar);
+    box-shadow: inset 0 0 0 calc(var(--cr) * 4) var(--rar-ring), 0 calc(var(--cr) * 4) 0 var(--rar-ring);
+    color: var(--rar-deep);
+    font-size: max(14px, calc(var(--cr) * 32));
+    white-space: nowrap;
+}
+
+.cr-count {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--cr) * 14);
+    padding: calc(var(--cr) * 8) calc(var(--cr) * 22);
+    border-radius: calc(var(--cr) * 30);
+    background: #ffffff;
+    box-shadow: inset 0 0 0 calc(var(--cr) * 3) #eadcfb, 0 calc(var(--cr) * 4) 0 #efe3fb;
+}
+
+.cr-count-label {
+    color: var(--cr-ink-soft);
+    font-size: max(13px, calc(var(--cr) * 28));
+    white-space: nowrap;
+}
+
+.cr-meter {
+    position: relative;
+    width: calc(var(--cr) * 220);
+    height: calc(var(--cr) * 22);
+    border-radius: calc(var(--cr) * 11);
+    background: #f1e6fb;
+    box-shadow: inset 0 calc(var(--cr) * 2) calc(var(--cr) * 3) rgba(120, 80, 170, 0.15);
+    overflow: hidden;
+}
+
+.lui-portrait .cr-meter {
+    width: calc(var(--cr) * 150);
+}
+
+.cr-meter-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    border-radius: inherit;
+    background: linear-gradient(#9ff0c0, #5fd393);
+    transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cr-overlay.is-complete .cr-meter-fill {
+    background: linear-gradient(#ffe39a, #f6b94e);
+}
+
+.cr-count-text {
+    min-width: calc(var(--cr) * 70);
+    color: var(--cr-ink);
+    font-size: max(15px, calc(var(--cr) * 36));
+    text-align: right;
+    white-space: nowrap;
+}
+
+.cr-count-text.is-up {
+    animation: cr-count-up 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes cr-count-up {
+    0% { transform: scale(1); color: var(--cr-ink); }
+    40% { transform: scale(1.35); color: #3fbf76; }
+    100% { transform: scale(1); color: var(--cr-ink); }
+}
+
+/* ---- The strip --------------------------------------------------------- */
+
+.cr-stage {
+    position: relative;
+    flex: none;
+    height: calc(var(--cr-card-h) + var(--cr) * 64);
+    margin: 0 calc(var(--cr) * -14);
+}
+
+.cr-track {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border-radius: calc(var(--cr) * 36);
+    background:
+        linear-gradient(90deg, rgba(246, 239, 254, 0) 0, rgba(246, 239, 254, 1) 18%, rgba(246, 239, 254, 1) 82%, rgba(246, 239, 254, 0) 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 12%, #000 88%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 12%, #000 88%, transparent 100%);
+}
+
+.cr-track.is-bump-left { animation: cr-bump-left 0.3s ease-out; }
+.cr-track.is-bump-right { animation: cr-bump-right 0.3s ease-out; }
+
+@keyframes cr-bump-left {
+    30% { transform: translateX(calc(var(--cr) * -7)); }
+    100% { transform: none; }
+}
+
+@keyframes cr-bump-right {
+    30% { transform: translateX(calc(var(--cr) * 7)); }
+    100% { transform: none; }
+}
+
+.cr-strip {
+    --pos: 0;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    display: flex;
+    gap: var(--cr-gap);
+    margin-top: calc(var(--cr-card-h) / -2);
+    transform: translateX(calc(var(--pos) * -1 * var(--cr-pitch) - var(--cr-card-w) / 2));
+    will-change: transform;
+}
+
+.cr-card {
+    position: relative;
+    flex: none;
+    width: var(--cr-card-w);
+    height: var(--cr-card-h);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--cr) * 10);
+    border-radius: calc(var(--cr) * 32);
+    background: linear-gradient(#ffffff, var(--rar));
+    box-shadow:
+        inset 0 0 0 calc(var(--cr) * 5) var(--rar-ring),
+        0 calc(var(--cr) * 6) 0 var(--rar-ring);
+    transform: scale(0.9);
+    transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cr-card.is-center {
+    transform: scale(1);
+}
+
+.cr-card.is-won {
+    animation: cr-won 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes cr-won {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.16) rotate(-2deg); }
+    60% { transform: scale(1.04) rotate(1deg); }
+    100% { transform: scale(1.08); }
+}
+
+.cr-bubble {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 76%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ffffff 0, rgba(255, 255, 255, 0.6) 70%);
+}
+
+.cr-icon {
+    width: 88%;
+    height: 88%;
+    background-repeat: no-repeat;
+}
+
+.cr-chance {
+    padding: 0 calc(var(--cr) * 14);
+    border-radius: calc(var(--cr) * 16);
+    background: var(--rar-ring);
+    color: #ffffff;
+    font-size: max(12px, calc(var(--cr) * 26));
+    text-shadow: 0 calc(var(--cr) * 2) 0 rgba(0, 0, 0, 0.12);
+    white-space: nowrap;
+}
+
+/* Already in the collection: a mint tick in the corner. */
+.cr-owned {
+    position: absolute;
+    top: calc(var(--cr) * 8);
+    right: calc(var(--cr) * 8);
+    display: none;
+    width: calc(var(--cr) * 38);
+    height: calc(var(--cr) * 38);
+    border-radius: 50%;
+    background: #6fd49b;
+    box-shadow: 0 calc(var(--cr) * 3) 0 #42b077, inset 0 0 0 calc(var(--cr) * 3) #ffffff;
+}
+
+.cr-owned::after {
+    content: '';
+    position: absolute;
+    left: 34%;
+    top: 22%;
+    width: 22%;
+    height: 40%;
+    border: solid #ffffff;
+    border-width: 0 calc(var(--cr) * 4) calc(var(--cr) * 4) 0;
+    transform: rotate(45deg);
+}
+
+.is-owned > .cr-owned {
+    display: block;
+}
+
+/* The marker the strip runs under. */
+.cr-marker {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: calc(var(--cr-card-w) + var(--cr) * 22);
+    height: calc(var(--cr-card-h) + var(--cr) * 22);
+    transform: translate(-50%, -50%);
+    border-radius: calc(var(--cr) * 40);
+    box-shadow:
+        0 0 0 calc(var(--cr) * 6) #ff8fc4,
+        0 0 calc(var(--cr) * 26) rgba(255, 143, 196, 0.75);
+}
+
+.cr-marker.is-tick {
+    animation: cr-tick 0.14s ease-out;
+}
+
+@keyframes cr-tick {
+    50% { transform: translate(-50%, -50%) scale(1.035); }
+}
+
+.cr-marker-top,
+.cr-marker-bottom {
+    position: absolute;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-left: calc(var(--cr) * 20) solid transparent;
+    border-right: calc(var(--cr) * 20) solid transparent;
+    transform: translateX(-50%);
+}
+
+.cr-marker-top {
+    top: calc(var(--cr) * -16);
+    border-top: calc(var(--cr) * 24) solid #ff8fc4;
+}
+
+.cr-marker-bottom {
+    bottom: calc(var(--cr) * -16);
+    border-bottom: calc(var(--cr) * 24) solid #ff8fc4;
+}
+
+.cr-overlay.is-revealed .cr-marker {
+    box-shadow:
+        0 0 0 calc(var(--cr) * 6) #ffcc4d,
+        0 0 calc(var(--cr) * 40) rgba(255, 204, 77, 0.9);
+}
+
+.cr-overlay.is-revealed .cr-marker-top { border-top-color: #ffcc4d; }
+.cr-overlay.is-revealed .cr-marker-bottom { border-bottom-color: #ffcc4d; }
+
+/* What came out, under the marker. */
+.cr-result {
+    position: absolute;
+    left: 50%;
+    bottom: calc(var(--cr) * -22);
+    display: flex;
+    align-items: center;
+    gap: calc(var(--cr) * 10);
+    padding: calc(var(--cr) * 6) calc(var(--cr) * 26);
+    border-radius: calc(var(--cr) * 28);
+    background: linear-gradient(#ffb3d9, #ff8fc4);
+    box-shadow: inset 0 calc(var(--cr) * 3) 0 rgba(255, 255, 255, 0.5), 0 calc(var(--cr) * 5) 0 #e0679f;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    z-index: 2;
+    animation: cr-result-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes cr-result-in {
+    from { opacity: 0; transform: translate(-50%, calc(var(--cr) * 16)) scale(0.7); }
+    to { opacity: 1; transform: translateX(-50%); }
+}
+
+.cr-result-name {
+    color: #ffffff;
+    font-size: max(15px, calc(var(--cr) * 36));
+    text-shadow: 0 calc(var(--cr) * 2) 0 rgba(176, 50, 110, 0.55);
+}
+
+.cr-result-new {
+    padding: 0 calc(var(--cr) * 12);
+    border-radius: calc(var(--cr) * 14);
+    background: #ffe46b;
+    box-shadow: 0 calc(var(--cr) * 3) 0 #e8b830;
+    color: #b0560a;
+    font-size: max(12px, calc(var(--cr) * 26));
+    animation: cr-new-wiggle 0.9s ease-in-out infinite;
+}
+
+@keyframes cr-new-wiggle {
+    0%, 100% { transform: rotate(-4deg) scale(1); }
+    50% { transform: rotate(4deg) scale(1.08); }
+}
+
+/* A player's first box: two more pieces flip in beside the winner, ringed in
+   gold, and the result line calls them a bonus. */
+.cr-card.is-bonus {
+    box-shadow:
+        inset 0 0 0 calc(var(--cr) * 5) #ffcc4d,
+        0 calc(var(--cr) * 6) 0 #e8b830,
+        0 0 calc(var(--cr) * 26) rgba(255, 204, 77, 0.85);
+    animation: cr-bonus-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes cr-bonus-in {
+    0% { transform: scale(0.9) rotateY(90deg); }
+    100% { transform: scale(0.98) rotateY(0deg); }
+}
+
+.cr-result-bonus {
+    padding: 0 calc(var(--cr) * 12);
+    border-radius: calc(var(--cr) * 14);
+    background: #ffe46b;
+    box-shadow: 0 calc(var(--cr) * 3) 0 #e8b830;
+    color: #b0560a;
+    font-size: max(12px, calc(var(--cr) * 26));
+    animation: cr-bonus-chip-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.cr-result-bonus[hidden] {
+    display: none;
+}
+
+@keyframes cr-bonus-chip-in {
+    from { transform: scale(0); }
+    to { transform: scale(1); }
+}
+
+/* ---- Everything this chest can give ------------------------------------ */
+
+.cr-prizes {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--cr) * 10);
+    padding-top: calc(var(--cr) * 28);
+}
+
+.cr-prizes-label {
+    flex: none;
+    color: var(--cr-ink-soft);
+    font-size: max(13px, calc(var(--cr) * 28));
+    text-align: center;
+}
+
+.cr-prizes-label::before,
+.cr-prizes-label::after {
+    content: '\2726';
+    margin: 0 calc(var(--cr) * 12);
+    color: #f59ac6;
+}
+
+.cr-grid {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    grid-auto-rows: 1fr;
+    align-content: center;
+    gap: calc(var(--cr) * 14) calc(var(--cr) * 14);
+}
+
+.lui-portrait .cr-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: calc(var(--cr) * 16);
+}
+
+.cr-prize {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--cr) * 4);
+    min-width: 0;
+    min-height: 0;
+    padding: calc(var(--cr) * 8) calc(var(--cr) * 4) calc(var(--cr) * 10);
+    border-radius: calc(var(--cr) * 24);
+    background: linear-gradient(#ffffff, var(--rar));
+    box-shadow: inset 0 0 0 calc(var(--cr) * 4) var(--rar-ring), 0 calc(var(--cr) * 4) 0 var(--rar-ring);
+}
+
+/* The bubble is the largest circle that fits the card, tall or short, so the
+   picture inside is never stretched. (Without container units it falls back
+   to 82% of the card width, still round.) */
+.cr-prize {
+    container-type: size;
+    /* A card shape, not a full-height strip when only a few prizes fill the
+       row; with many rows it still shrinks to fit. */
+    align-self: center;
+    aspect-ratio: 4 / 5;
+    max-height: 100%;
+}
+
+.cr-prize .cr-bubble {
+    flex: none;
+    width: 82%;
+    /* Container units measure inside the card's padding: only the chance
+       chip and the gap above it come off the height. */
+    width: min(82cqw, 100cqh - var(--cr) * 32);
+    height: auto;
+    aspect-ratio: 1;
+}
+
+.cr-prize .cr-chance {
+    font-size: max(10px, calc(var(--cr) * 21));
+    padding: 0 calc(var(--cr) * 9);
+}
+
+.cr-prize .cr-owned {
+    top: calc(var(--cr) * -8);
+    right: calc(var(--cr) * -8);
+    width: calc(var(--cr) * 32);
+    height: calc(var(--cr) * 32);
+}
+
+/* The piece that just came out, picked out in gold. */
+.cr-prize.is-won {
+    box-shadow:
+        inset 0 0 0 calc(var(--cr) * 5) #ffcc4d,
+        0 calc(var(--cr) * 4) 0 #e8b830,
+        0 0 calc(var(--cr) * 22) rgba(255, 204, 77, 0.8);
+}
+
+.cr-prize.is-new .cr-bubble {
+    animation: cr-prize-new 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cr-prize.is-new > .cr-owned {
+    animation: cr-tick-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both;
+}
+
+@keyframes cr-prize-new {
+    40% { transform: scale(1.25); }
+    100% { transform: scale(1); }
+}
+
+@keyframes cr-tick-in {
+    from { transform: scale(0); }
+    to { transform: scale(1); }
+}

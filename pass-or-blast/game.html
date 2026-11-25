@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <script>window.open = function () {}; window.NOSW = true;</script>
+<script src="poki-sdk.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+<title>Run, Pass, Boom!</title>
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧨</text></svg>" />
+  <script type="module" crossorigin src="./assets/index-DbpAtoUm.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-plsOGGTD.css">
+</head>
+<body>
+<div id="app"></div>
+<div id="labels"></div>
+<div id="hud">
+  <div id="coins" class="pill"><span class="coin"></span><span id="coinVal">0</span></div>
+  <div id="topBtns"><button id="muteBtn" class="sq" aria-label="Sound">🔊</button><button id="pauseBtn" class="sq" aria-label="Pause">⏸</button></div>
+  <div id="top">
+    <div id="roundLbl">ROUND 1</div>
+    <div id="dots"></div>
+    <div id="fuses">
+      <div id="fuse" class="fuse"><span class="bombIc">💣</span><div class="bar"><div id="fuseFill"></div></div><span id="fuseTxt">15</span></div>
+      <div id="fuse2" class="fuse hidden"><span class="bombIc">💣</span><div class="bar"><div id="fuseFill2"></div></div><span id="fuseTxt2">15</span></div>
+      <div id="bombBadge" class="hidden">2× BOMBS</div>
+    </div>
+    <div id="youBomb">YOU HAVE THE BOMB! <b>PASS IT!</b></div>
+  </div>
+  <div id="pus"></div>
+  <canvas id="mini" width="110" height="110"></canvas>
+  <div id="intro" class="hidden"><div id="introRound"></div><div id="introTxt"></div><div id="introSub"></div><div id="introNum"></div><div id="introTap">TAP TO SPEED UP</div></div>
+  <div id="banner"></div>
+  <div id="midBans"><div id="eventBan"></div><div id="hideWarn"></div></div>
+  <div id="toast"></div>
+  <div id="pops"></div>
+  <div id="tut" class="hidden"><div id="tutHead"><span id="tutStep">TUTORIAL</span><button id="tutSkip">Skip ✕</button></div><div id="tutTxt"></div><div id="tutKeys"></div></div>
+  <button id="skipBtn" class="hidden">SKIP TO RESULTS ▶</button>
+  <div id="touch"><div id="joyZone"></div><div id="joy"><div id="knob"></div></div><button id="dashBtn"><span id="dashIc">💨</span><span id="dashCd"></span><span id="dashLbl">DASH</span></button><button id="jumpBtn"><span id="jumpIc">⤒</span><span id="jumpLbl">JUMP</span></button><button id="useBtn" class="hidden"><span id="useIc">🚜</span><span id="useLbl">DRIVE</span></button></div>
+</div>
+<div id="flash"></div>
+<div id="modal" class="hidden"><div class="card" id="modalCard"></div></div>
+<div id="loading"><div class="lt">RUN, PASS, <span>BOOM!</span></div><div class="lb"><div id="loadFill"></div></div></div>
+</body>
+</html>

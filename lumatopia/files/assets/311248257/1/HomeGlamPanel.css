@@ -1,0 +1,639 @@
+/* Home glam (HomeGlam.js + HomeGlamView.js).
+   The bar: a small white pill at the top middle of the screen while the
+   player is in their own home -- a gold sparkle, the level's name over a
+   candy bar to the next level, and the score. It is sized in HUD units
+   (--hud, one unit of the PlayCanvas GameUI screen) and sits between the
+   HUD's top rows; on upright screens it drops below them and the tutorial
+   bar. Only the pill takes taps.
+   The panel: the backpack's frame (InventoryPanel.css, --iv units) with the
+   level and score, the bar, what the next level pays, the piece to find
+   next, the room sets with their pieces, the collection styles and the walls,
+   floor and roof. Font sizes carry a pixel floor for phones. Art (furniture
+   icons, the coin) is drawn as it is: state is on the cards around it. */
+
+/* ---- The bar -------------------------------------------------------------- */
+
+.hg-hud {
+    position: absolute;
+    left: 50%;
+    top: calc(var(--hud, 1px) * 16);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+.lui-portrait .hg-hud {
+    top: calc(var(--hud, 1px) * 162);
+}
+
+.hg-hud.is-in {
+    animation: hg-hud-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes hg-hud-in {
+    from { opacity: 0; transform: translate(-50%, calc(var(--hud, 1px) * -14)) scale(0.85); }
+}
+
+.hg-pill {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--hud, 1px) * 8);
+    height: max(30px, calc(var(--hud, 1px) * 50));
+    padding: 0 calc(var(--hud, 1px) * 16) 0 calc(var(--hud, 1px) * 10);
+    border-radius: calc(var(--hud, 1px) * 26);
+    background: linear-gradient(#ffffff, #fff1f8);
+    box-shadow:
+        inset 0 0 0 calc(var(--hud, 1px) * 3) #ffd36b,
+        0 calc(var(--hud, 1px) * 3) 0 #f2b8d6,
+        0 calc(var(--hud, 1px) * 5) calc(var(--hud, 1px) * 10) rgba(60, 25, 70, 0.35);
+    pointer-events: auto;
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.hg-pill.is-bump {
+    animation: hg-bump 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes hg-bump {
+    30% { transform: scale(1.14); }
+    100% { transform: scale(1); }
+}
+
+@media (hover: hover) {
+    .hg-pill:hover { transform: scale(1.06); }
+}
+
+.hg-pill:active { transform: scale(0.94); transition-duration: 0.1s; }
+
+/* A gold four-point sparkle. */
+.hg-spark {
+    position: relative;
+    flex: none;
+    width: max(20px, calc(var(--hud, 1px) * 32));
+    height: max(20px, calc(var(--hud, 1px) * 32));
+    background: radial-gradient(circle at 40% 35%, #fff6c8 0, #ffd04d 45%, #f59a1b 100%);
+    clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+    animation: hg-twinkle 2.4s ease-in-out infinite;
+}
+
+@keyframes hg-twinkle {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(18deg) scale(1.12); }
+}
+
+.hg-pill-body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: calc(var(--hud, 1px) * 4);
+}
+
+.hg-pill-level {
+    --outline: #ffffff;
+    --outline-width: max(1px, calc(var(--hud, 1px) * 2));
+    color: #9b4fd0;
+    font-size: max(12px, calc(var(--hud, 1px) * 20));
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.hg-pill-meter {
+    position: relative;
+    width: calc(var(--hud, 1px) * 110);
+    height: max(5px, calc(var(--hud, 1px) * 9));
+    border-radius: calc(var(--hud, 1px) * 5);
+    background: #f1e6fb;
+    box-shadow: inset 0 calc(var(--hud, 1px) * 1) calc(var(--hud, 1px) * 2) rgba(120, 80, 170, 0.2);
+    overflow: hidden;
+}
+
+.hg-pill-fill,
+.hg-bar-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #ff9fd0, #ffcc4d);
+    transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.hg-pill-score {
+    --outline: #b34f00;
+    --outline-width: max(1px, calc(var(--hud, 1px) * 2.5));
+    min-width: calc(var(--hud, 1px) * 30);
+    color: #ffd84d;
+    font-size: max(15px, calc(var(--hud, 1px) * 28));
+    line-height: 1;
+    text-align: right;
+}
+
+/* The H key, as on the HUD's own key caps; none on touch. */
+.hg-key {
+    position: absolute;
+    top: calc(var(--hud, 1px) * -12);
+    right: calc(var(--hud, 1px) * -10);
+    min-width: max(16px, calc(var(--hud, 1px) * 24));
+    padding: 0 calc(var(--hud, 1px) * 5);
+    border-radius: calc(var(--hud, 1px) * 6);
+    background: #ffffff;
+    box-shadow: 0 calc(var(--hud, 1px) * 2) 0 #c9b6e4, 0 0 0 calc(var(--hud, 1px) * 1.5) #c9b6e4;
+    color: #6b4c8a;
+    font-size: max(10px, calc(var(--hud, 1px) * 15));
+    line-height: max(16px, calc(var(--hud, 1px) * 24));
+    text-align: center;
+}
+
+/* "+8" floating up from the bar. */
+.hg-gain {
+    --outline: #b34f00;
+    --outline-width: max(1px, calc(var(--hud, 1px) * 2.5));
+    margin-top: calc(var(--hud, 1px) * 4);
+    color: #ffe066;
+    font-size: max(16px, calc(var(--hud, 1px) * 30));
+    pointer-events: none;
+}
+
+.hg-gain.is-up {
+    animation: hg-gain 1.5s ease-out both;
+}
+
+@keyframes hg-gain {
+    0% { opacity: 0; transform: translateY(calc(var(--hud, 1px) * 18)) scale(0.6); }
+    18% { opacity: 1; transform: translateY(0) scale(1.15); }
+    35% { transform: translateY(0) scale(1); }
+    80% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(calc(var(--hud, 1px) * -10)); }
+}
+
+/* ---- New level banner ------------------------------------------------------ */
+
+.hg-banner {
+    position: absolute;
+    left: 50%;
+    top: 30%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(var(--hud, 1px) * 6);
+    padding: calc(var(--hud, 1px) * 18) calc(var(--hud, 1px) * 44) calc(var(--hud, 1px) * 20);
+    border-radius: calc(var(--hud, 1px) * 34);
+    background:
+        radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.9) 0, rgba(255, 255, 255, 0) 60%),
+        linear-gradient(#fff6d6, #ffe0f0);
+    box-shadow:
+        inset 0 0 0 calc(var(--hud, 1px) * 4) #ffd36b,
+        0 calc(var(--hud, 1px) * 5) 0 #f2b8d6,
+        0 calc(var(--hud, 1px) * 10) calc(var(--hud, 1px) * 26) rgba(60, 25, 70, 0.4);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.hg-banner.is-in {
+    animation: hg-banner-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.hg-banner.is-out {
+    animation: hg-banner-out 0.3s ease-in both;
+}
+
+@keyframes hg-banner-in {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4) rotate(-6deg); }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+}
+
+@keyframes hg-banner-out {
+    to { opacity: 0; transform: translate(-50%, -60%) scale(0.9); }
+}
+
+.hg-banner-title {
+    --outline: #9b4fd0;
+    --outline-width: max(1px, calc(var(--hud, 1px) * 2.5));
+    color: #ffffff;
+    font-size: max(14px, calc(var(--hud, 1px) * 26));
+}
+
+.hg-banner-level {
+    --outline: #b34f00;
+    --outline-width: max(1.5px, calc(var(--hud, 1px) * 4));
+    color: #ffd84d;
+    font-size: max(26px, calc(var(--hud, 1px) * 58));
+    line-height: 1.05;
+}
+
+.hg-banner-reward {
+    display: flex;
+    justify-content: center;
+}
+
+/* ---- Money: the coin beside the amount ------------------------------------- */
+
+.hg-money {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--iv, 1px) * 6);
+    padding: calc(var(--iv, 1px) * 3) calc(var(--iv, 1px) * 14) calc(var(--iv, 1px) * 3) calc(var(--iv, 1px) * 6);
+    border-radius: calc(var(--iv, 1px) * 20);
+    background: #ede3fb;
+    color: #5b3f78;
+    font-size: max(12px, calc(var(--iv, 1px) * 26));
+    white-space: nowrap;
+}
+
+.hg-money-icon {
+    width: max(16px, calc(var(--iv, 1px) * 34));
+    height: max(16px, calc(var(--iv, 1px) * 34));
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.hg-banner .hg-money.is-big {
+    gap: calc(var(--hud, 1px) * 8);
+    padding: calc(var(--hud, 1px) * 4) calc(var(--hud, 1px) * 18) calc(var(--hud, 1px) * 4) calc(var(--hud, 1px) * 8);
+    border-radius: calc(var(--hud, 1px) * 22);
+    background: #ffffff;
+    box-shadow: 0 calc(var(--hud, 1px) * 3) 0 #f2b8d6;
+    font-size: max(15px, calc(var(--hud, 1px) * 30));
+}
+
+.hg-banner .hg-money.is-big .hg-money-icon {
+    width: max(20px, calc(var(--hud, 1px) * 38));
+    height: max(20px, calc(var(--hud, 1px) * 38));
+}
+
+/* ---- The panel ------------------------------------------------------------- */
+
+.hg-window {
+    position: relative;
+    width: calc(var(--iv) * 1060);
+    height: calc(var(--iv) * 760);
+    margin-top: calc(var(--iv) * 50);
+}
+
+.lui-portrait .hg-window {
+    width: calc(var(--iv) * 860);
+    height: calc(var(--iv) * 1400);
+}
+
+.hg-panel {
+    gap: calc(var(--iv) * 14);
+    padding-top: calc(var(--iv) * 64);
+}
+
+.hg-head {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--iv) * 8);
+    padding: calc(var(--iv) * 14) calc(var(--iv) * 24) calc(var(--iv) * 16);
+    border-radius: calc(var(--iv) * 30);
+    background: linear-gradient(#fff8e3, #ffeef7);
+    box-shadow: inset 0 0 0 calc(var(--iv) * 4) #ffe1a1;
+}
+
+.hg-head-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: calc(var(--iv) * 20);
+}
+
+.hg-level {
+    --outline: #9b4fd0;
+    --outline-width: max(1px, calc(var(--iv) * 3));
+    color: #ffffff;
+    font-size: max(20px, calc(var(--iv) * 54));
+    line-height: 1.05;
+}
+
+.hg-score {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--iv) * 8);
+    color: #c27812;
+    font-size: max(18px, calc(var(--iv) * 46));
+}
+
+.hg-score::before {
+    content: '';
+    width: max(16px, calc(var(--iv) * 38));
+    height: max(16px, calc(var(--iv) * 38));
+    background: radial-gradient(circle at 40% 35%, #fff6c8 0, #ffd04d 45%, #f59a1b 100%);
+    clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+}
+
+.hg-bar {
+    position: relative;
+    height: max(10px, calc(var(--iv) * 24));
+    border-radius: calc(var(--iv) * 12);
+    background: #f1e6fb;
+    box-shadow: inset 0 calc(var(--iv) * 2) calc(var(--iv) * 3) rgba(120, 80, 170, 0.18);
+    overflow: hidden;
+}
+
+.hg-next {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: calc(var(--iv) * 16);
+}
+
+.hg-next-text {
+    color: var(--iv-ink);
+    font-size: max(13px, calc(var(--iv) * 30));
+}
+
+/* ---- The piece to find next ------------------------------------------------ */
+
+.hg-tip {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--iv) * 18);
+    padding: calc(var(--iv) * 10) calc(var(--iv) * 16);
+    border-radius: calc(var(--iv) * 30);
+    background: #ffffff;
+    box-shadow: inset 0 0 0 calc(var(--iv) * 4) #eadcfb, 0 calc(var(--iv) * 4) 0 #efe3fb;
+}
+
+.hg-tip-card {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: calc(var(--iv) * 104);
+    height: calc(var(--iv) * 104);
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ffffff 0, #f6eefe 70%);
+    box-shadow: inset 0 0 0 calc(var(--iv) * 4) #d9c6f2;
+}
+
+.hg-tip-words {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--iv) * 4);
+}
+
+.hg-tip-label {
+    color: var(--iv-ink-soft);
+    font-size: max(12px, calc(var(--iv) * 26));
+}
+
+.hg-tip-name {
+    --outline: #9b4fd0;
+    --outline-width: max(1px, calc(var(--iv) * 2.5));
+    color: #ffffff;
+    font-size: max(16px, calc(var(--iv) * 40));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hg-find {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* The button art is 180 x 85; the box keeps that shape. */
+    width: calc(var(--iv) * 270);
+    height: calc(var(--iv) * 127.5);
+    padding: 0 calc(var(--iv) * 18) calc(var(--iv) * 6);
+    background-size: 100% 100%;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.hg-find-text {
+    --outline: #336619;
+    --outline-width: max(1px, calc(var(--iv) * 2.5));
+    color: #ffffff;
+    font-size: max(13px, calc(var(--iv) * 32));
+    line-height: 1.05;
+    text-align: center;
+}
+
+@media (hover: hover) {
+    .hg-close:hover { transform: scale(1.15); }
+    .hg-find:hover { transform: scale(1.08); }
+}
+
+.hg-close:active { transform: scale(0.88); transition-duration: 0.1s; }
+.hg-find:active { transform: scale(0.92); transition-duration: 0.1s; }
+
+/* ---- Sets, styles, walls/floor/roof (scrolls) ------------------------------ */
+
+.hg-scroll {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--iv) * 10);
+    padding: calc(var(--iv) * 4) calc(var(--iv) * 6) calc(var(--iv) * 10);
+    overflow-x: hidden;
+    overflow-y: auto;
+    touch-action: pan-y;
+    overscroll-behavior: contain;
+}
+
+.hg-section {
+    flex: none;
+    color: var(--iv-ink-soft);
+    font-size: max(13px, calc(var(--iv) * 28));
+    text-align: center;
+}
+
+.hg-section::before,
+.hg-section::after {
+    content: '\2726';
+    margin: 0 calc(var(--iv) * 12);
+    color: #f59ac6;
+}
+
+.hg-sets {
+    flex: none;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: calc(var(--iv) * 14);
+}
+
+.lui-portrait .hg-sets {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.hg-set {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--iv) * 8);
+    padding: calc(var(--iv) * 12) calc(var(--iv) * 12) calc(var(--iv) * 14);
+    border-radius: calc(var(--iv) * 26);
+    background: #ffffff;
+    box-shadow: inset 0 0 0 calc(var(--iv) * 3) #eadcfb, 0 calc(var(--iv) * 4) 0 #efe3fb;
+}
+
+.hg-set.is-done {
+    background: linear-gradient(#fffbe8, #fff1c9);
+    box-shadow:
+        inset 0 0 0 calc(var(--iv) * 4) #ffcc4d,
+        0 calc(var(--iv) * 4) 0 #e8b830,
+        0 0 calc(var(--iv) * 18) rgba(255, 204, 77, 0.6);
+}
+
+.hg-set-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: calc(var(--iv) * 8);
+}
+
+.hg-set-name {
+    min-width: 0;
+    color: var(--iv-ink);
+    font-size: max(12px, calc(var(--iv) * 26));
+    line-height: 1.1;
+}
+
+.hg-set-bonus {
+    flex: none;
+    padding: 0 calc(var(--iv) * 10);
+    border-radius: calc(var(--iv) * 14);
+    background: #ede3fb;
+    color: #8a6bb0;
+    font-size: max(11px, calc(var(--iv) * 22));
+}
+
+.hg-set.is-done .hg-set-bonus {
+    background: #ffcc4d;
+    color: #8a4b00;
+}
+
+.hg-set-pieces {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: calc(var(--iv) * 6);
+}
+
+/* One piece: a round bubble, solid and ticked when it stands in the home,
+   a dashed outline while it is still to find. The picture is the same. */
+.hg-piece {
+    position: relative;
+    aspect-ratio: 1;
+}
+
+.hg-piece-bubble {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #fbf8fe;
+    border: max(1.5px, calc(var(--iv) * 3)) dashed #cdb8e8;
+}
+
+.hg-piece.is-have .hg-piece-bubble {
+    background: radial-gradient(circle at 35% 30%, #ffffff 0, #e8f9ee 75%);
+    border: max(1.5px, calc(var(--iv) * 3)) solid #84d99d;
+}
+
+.hg-icon {
+    width: 82%;
+    height: 82%;
+    background-repeat: no-repeat;
+}
+
+/* The mint tick of the chest panel. */
+.hg-tick {
+    position: absolute;
+    display: none;
+    width: max(14px, calc(var(--iv) * 30));
+    height: max(14px, calc(var(--iv) * 30));
+    border-radius: 50%;
+    background: #6fd49b;
+    box-shadow: 0 calc(var(--iv) * 2) 0 #42b077, inset 0 0 0 calc(var(--iv) * 2.5) #ffffff;
+}
+
+.hg-tick::after {
+    content: '';
+    position: absolute;
+    left: 34%;
+    top: 22%;
+    width: 22%;
+    height: 40%;
+    border: solid #ffffff;
+    border-width: 0 max(1.5px, calc(var(--iv) * 3.5)) max(1.5px, calc(var(--iv) * 3.5)) 0;
+    transform: rotate(45deg);
+}
+
+.hg-piece .hg-tick {
+    top: calc(var(--iv) * -4);
+    right: calc(var(--iv) * -4);
+}
+
+.hg-piece.is-have .hg-tick,
+.hg-extra.is-done .hg-tick {
+    display: block;
+}
+
+.hg-extras {
+    flex: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: calc(var(--iv) * 12);
+}
+
+.hg-extra {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--iv) * 10);
+    padding: calc(var(--iv) * 8) calc(var(--iv) * 16) calc(var(--iv) * 8) calc(var(--iv) * 16);
+    border-radius: calc(var(--iv) * 24);
+    background: #ffffff;
+    box-shadow: inset 0 0 0 calc(var(--iv) * 3) #eadcfb;
+}
+
+.hg-extra.is-done {
+    padding-left: calc(var(--iv) * 12);
+    background: linear-gradient(#fffbe8, #fff1c9);
+    box-shadow: inset 0 0 0 calc(var(--iv) * 3) #ffcc4d;
+}
+
+.hg-extra .hg-tick {
+    position: relative;
+    flex: none;
+}
+
+.hg-extra-label {
+    color: var(--iv-ink);
+    font-size: max(12px, calc(var(--iv) * 26));
+    white-space: nowrap;
+}
+
+.hg-extra-chip {
+    padding: 0 calc(var(--iv) * 10);
+    border-radius: calc(var(--iv) * 14);
+    background: #ede3fb;
+    color: #8a6bb0;
+    font-size: max(11px, calc(var(--iv) * 22));
+    white-space: nowrap;
+}
+
+.hg-extra.is-done .hg-extra-chip {
+    background: #ffcc4d;
+    color: #8a4b00;
+}
+
+.hg-note {
+    flex: none;
+    color: var(--iv-ink-soft);
+    font-size: max(11px, calc(var(--iv) * 24));
+    text-align: center;
+}

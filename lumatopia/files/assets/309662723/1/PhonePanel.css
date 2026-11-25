@@ -1,0 +1,1104 @@
+/* The player's phone (Phone.js + PhoneView.js).
+   A lilac case with cat ears slides up beside the player. Sized in --pu, one
+   phone unit: 1.25 HUD units (--hud) in landscape, a larger one in portrait
+   where the phone sits under the player, and never so large that it leaves
+   the screen. The world stays visible behind a soft shade; a tap off the phone
+   puts it away.
+   Poki (2026-10-12): hard to read on small landscape screens, where the
+   height limit makes the whole phone small. The phone is bigger now, and the
+   quest text has a floor in pixels so it stays readable however small --pu
+   gets. */
+
+.ph-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: auto;
+}
+
+.ph-shade {
+    position: absolute;
+    inset: 0;
+    background: rgba(28, 10, 48, 0.28);
+}
+
+.lui-opening .ph-shade {
+    animation: ph-fade-in 0.25s ease-out both;
+}
+
+.lui-closing .ph-shade {
+    animation: ph-fade-out 0.18s ease-in both;
+}
+
+@keyframes ph-fade-in {
+    from { opacity: 0; }
+}
+
+@keyframes ph-fade-out {
+    to { opacity: 0; }
+}
+
+/* ---- The phone ---------------------------------------------------------- */
+
+.ph-phone {
+    --pu: min(calc(var(--hud, 1px) * 1.25), calc((var(--view-h, 100vh) - 28px) / 630));
+    --ph-tilt: -3deg;
+    --ph-ink: #3d2150;
+    position: absolute;
+    left: 57%;
+    bottom: calc(var(--hud, 1px) * 26);
+    width: calc(var(--pu) * 330);
+    height: calc(var(--pu) * 600);
+    color: var(--ph-ink);
+    transform: rotate(var(--ph-tilt));
+}
+
+.lui-portrait .ph-phone {
+    --pu: min(calc(var(--hud, 1px) * 1.45), calc((var(--view-w, 100vw) - 40px) / 360), calc((var(--view-h, 100vh) * 0.66) / 600));
+    --ph-tilt: 0deg;
+    left: 50%;
+    bottom: calc(var(--hud, 1px) * 24);
+    margin-left: calc(var(--pu) * -165);
+}
+
+.lui-opening .ph-phone {
+    animation: ph-up 0.46s cubic-bezier(0.2, 1.25, 0.35, 1) both;
+}
+
+.lui-closing .ph-phone {
+    animation: ph-down 0.18s cubic-bezier(0.5, 0, 0.75, 0) both;
+}
+
+@keyframes ph-up {
+    from { transform: translateY(calc(100% + 60px)) rotate(0deg); }
+    to { transform: rotate(var(--ph-tilt)); }
+}
+
+@keyframes ph-down {
+    from { transform: rotate(var(--ph-tilt)); }
+    to { transform: translateY(calc(100% + 60px)) rotate(0deg); }
+}
+
+.ph-ear {
+    position: absolute;
+    top: calc(var(--pu) * -18);
+    width: calc(var(--pu) * 70);
+    height: calc(var(--pu) * 70);
+    border-radius: calc(var(--pu) * 18);
+    background: #b796ff;
+    box-shadow: inset 0 0 0 calc(var(--pu) * 4) #d9c8ff;
+    transform: rotate(45deg);
+}
+
+.ph-ear-left { left: calc(var(--pu) * 40); }
+.ph-ear-right { right: calc(var(--pu) * 40); }
+
+.ph-ear-inner {
+    position: absolute;
+    inset: calc(var(--pu) * 16);
+    border-radius: calc(var(--pu) * 10);
+    background: #ffb3d6;
+}
+
+.ph-case {
+    position: absolute;
+    inset: 0;
+    border-radius: calc(var(--pu) * 58);
+    background: #b796ff;
+    box-shadow:
+        inset 0 0 0 calc(var(--pu) * 5) #d9c8ff,
+        0 calc(var(--pu) * 20) calc(var(--pu) * 44) rgba(30, 8, 60, 0.5);
+}
+
+.ph-side {
+    position: absolute;
+    right: calc(var(--pu) * -5);
+    top: calc(var(--pu) * 130);
+    width: calc(var(--pu) * 8);
+    height: calc(var(--pu) * 60);
+    border-radius: 99px;
+    background: #9f7cf5;
+}
+
+.ph-screen {
+    position: absolute;
+    inset: calc(var(--pu) * 13);
+    border-radius: calc(var(--pu) * 46);
+    overflow: hidden;
+    background-color: #fdf3ff;
+    background-image: radial-gradient(circle, rgba(185, 150, 255, 0.35) calc(var(--pu) * 1.8), transparent calc(var(--pu) * 2.2));
+    background-size: calc(var(--pu) * 26) calc(var(--pu) * 26);
+    display: flex;
+    flex-direction: column;
+}
+
+.ph-cam {
+    position: absolute;
+    top: calc(var(--pu) * 12);
+    left: 50%;
+    width: calc(var(--pu) * 12);
+    height: calc(var(--pu) * 12);
+    margin-left: calc(var(--pu) * -6);
+    border-radius: 50%;
+    background: #2c1840;
+}
+
+.ph-homebar {
+    position: absolute;
+    bottom: calc(var(--pu) * 12);
+    left: 50%;
+    width: calc(var(--pu) * 110);
+    height: calc(var(--pu) * 6);
+    margin-left: calc(var(--pu) * -55);
+    border-radius: 99px;
+    background: rgba(61, 33, 80, 0.35);
+}
+
+/* ---- Status bar ----------------------------------------------------------- */
+
+.ph-status {
+    flex: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: calc(var(--pu) * 34) calc(var(--pu) * 22) 0;
+}
+
+.ph-time {
+    font-size: calc(var(--pu) * 22);
+}
+
+.ph-wallet {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--pu) * 8);
+}
+
+.ph-coin {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--pu) * 3);
+    font-size: calc(var(--pu) * 15);
+}
+
+.ph-coin-icon {
+    width: calc(var(--pu) * 20);
+    height: calc(var(--pu) * 20);
+}
+
+/* ---- Home: the quest widget and the apps ----------------------------------- */
+
+.ph-home {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.ph-widget {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--pu) * 12);
+    margin: calc(var(--pu) * 16) calc(var(--pu) * 18) 0;
+    padding: calc(var(--pu) * 12) calc(var(--pu) * 14);
+    border: 0;
+    border-radius: calc(var(--pu) * 24);
+    background: #ffffff;
+    box-shadow: 0 calc(var(--pu) * 4) 0 #ead9ff;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.ph-widget-ring {
+    flex: none;
+    width: calc(var(--pu) * 34);
+    height: calc(var(--pu) * 34);
+}
+
+.ph-widget-text {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--pu) * 2);
+    min-width: 0;
+}
+
+.ph-widget-label {
+    font-size: max(10px, calc(var(--pu) * 12));
+    color: #8a6aa8;
+}
+
+.ph-widget-title {
+    font-size: max(13px, calc(var(--pu) * 19));
+}
+
+.ph-widget-goal {
+    font-size: max(11px, calc(var(--pu) * 13));
+    color: #6f5788;
+}
+
+.ph-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: calc(var(--pu) * 16) calc(var(--pu) * 6);
+    padding: calc(var(--pu) * 20) calc(var(--pu) * 14) 0;
+}
+
+.ph-app {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(var(--pu) * 6);
+    border: 0;
+    padding: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.ph-tile {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: calc(var(--pu) * 76);
+    height: calc(var(--pu) * 76);
+    border-radius: calc(var(--pu) * 24);
+    background: #ffffff;
+    box-shadow:
+        0 calc(var(--pu) * 5) 0 #e6d6ff,
+        0 calc(var(--pu) * 9) calc(var(--pu) * 14) rgba(80, 40, 120, 0.16);
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (hover: hover) {
+    .ph-app:not(.ph-soon):hover .ph-tile { transform: translateY(calc(var(--pu) * -3)) scale(1.05); }
+}
+
+.ph-app:active .ph-tile {
+    transition-duration: 0.08s;
+    transform: scale(0.92);
+}
+
+.ph-icon {
+    width: calc(var(--pu) * 60);
+    height: calc(var(--pu) * 60);
+}
+
+.ph-icon-quests {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: calc(var(--pu) * 7);
+}
+
+.ph-icon-quests b {
+    display: block;
+    width: calc(var(--pu) * 42);
+    height: calc(var(--pu) * 8);
+    border-radius: 99px;
+    background: #f07fb4;
+}
+
+.ph-label {
+    font-size: calc(var(--pu) * 14);
+    line-height: 1.1;
+    white-space: nowrap;
+}
+
+.ph-badge {
+    position: absolute;
+    top: calc(var(--pu) * -6);
+    right: calc(var(--pu) * -6);
+    min-width: calc(var(--pu) * 24);
+    height: calc(var(--pu) * 24);
+    padding: 0 calc(var(--pu) * 5);
+    box-sizing: border-box;
+    border-radius: 99px;
+    background: #ff4f79;
+    border: calc(var(--pu) * 3) solid #ffffff;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(var(--pu) * 13);
+    line-height: 1;
+}
+
+.ph-key {
+    position: absolute;
+    top: calc(var(--pu) * -6);
+    left: calc(var(--pu) * -6);
+    padding: 0 calc(var(--pu) * 5);
+    border-radius: calc(var(--pu) * 6);
+    background: rgba(34, 18, 48, 0.82);
+    color: #ffffff;
+    font-size: calc(var(--pu) * 12);
+    line-height: 1.5;
+}
+
+.ph-phone:not(.has-keys) .ph-key,
+.ph-phone:not(.has-keys) .ph-close-key {
+    display: none;
+}
+
+/* An app a quest has not opened yet: dimmed, with a small lock. */
+.ph-lock {
+    position: absolute;
+    right: calc(var(--pu) * 4);
+    bottom: calc(var(--pu) * 4);
+    width: calc(var(--pu) * 24);
+    height: calc(var(--pu) * 24);
+}
+
+.ph-app.is-locked .ph-icon {
+    opacity: 0.45;
+}
+
+/* The Index's first-reward guide points at its app. */
+.ph-app.is-guided .ph-tile {
+    animation: ph-guide 1.2s ease-in-out infinite;
+}
+
+@keyframes ph-guide {
+    0%, 100% { box-shadow: 0 calc(var(--pu) * 5) 0 #e6d6ff, 0 0 0 0 rgba(255, 143, 196, 0.7); }
+    50% { box-shadow: 0 calc(var(--pu) * 5) 0 #e6d6ff, 0 0 0 calc(var(--pu) * 10) rgba(255, 143, 196, 0); }
+}
+
+/* ...and the tutorial hand taps it: fingertip on the tile's middle, the hand
+   hanging below and to the right. */
+.ph-hand {
+    display: none;
+    position: absolute;
+    left: calc(50% - var(--pu) * 10);
+    top: calc(var(--pu) * 34);
+    width: calc(var(--pu) * 70);
+    height: calc(var(--pu) * 70);
+    pointer-events: none;
+    z-index: 3;
+}
+
+.ph-app.is-guided .ph-hand {
+    display: block;
+    animation: ph-hand-tap 1s ease-in-out infinite;
+}
+
+@keyframes ph-hand-tap {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(calc(var(--pu) * -5), calc(var(--pu) * -8)); }
+}
+
+/* Apps still to come */
+.ph-soon {
+    cursor: default;
+    opacity: 0.5;
+}
+
+.ph-soon .ph-tile {
+    background: rgba(255, 255, 255, 0.5);
+    box-shadow: none;
+    border: calc(var(--pu) * 3) dashed #b796ff;
+    box-sizing: border-box;
+}
+
+.ph-soon-icon {
+    width: 46%;
+    height: 46%;
+    color: var(--ph-ink);
+}
+
+.ph-soon-icon svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.ph-soon-tag {
+    position: absolute;
+    bottom: calc(var(--pu) * -8);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0 calc(var(--pu) * 7);
+    border-radius: 99px;
+    background: #b796ff;
+    color: #ffffff;
+    font-size: calc(var(--pu) * 11);
+    line-height: 1.6;
+    white-space: nowrap;
+}
+
+/* ---- "Hide phone" switch ----------------------------------------------------- */
+
+/* Sits at the foot of the home page, above the home bar. */
+.ph-switch-row {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--pu) * 10);
+    margin: auto calc(var(--pu) * 18) calc(var(--pu) * 30);
+    padding: calc(var(--pu) * 7) calc(var(--pu) * 8) calc(var(--pu) * 7) calc(var(--pu) * 16);
+    border: 0;
+    border-radius: 99px;
+    background: #ffffff;
+    box-shadow: 0 calc(var(--pu) * 3) 0 #ead9ff;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.ph-switch-label {
+    flex: 1;
+    min-width: 0;
+    font-size: calc(var(--pu) * 14);
+    line-height: 1.1;
+}
+
+.ph-switch {
+    flex: none;
+    position: relative;
+    width: calc(var(--pu) * 46);
+    height: calc(var(--pu) * 26);
+    border-radius: 99px;
+    background: #e3d6ff;
+    transition: background-color 0.2s ease;
+}
+
+.ph-switch-knob {
+    position: absolute;
+    top: calc(var(--pu) * 3);
+    left: calc(var(--pu) * 3);
+    width: calc(var(--pu) * 20);
+    height: calc(var(--pu) * 20);
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 calc(var(--pu) * 2) calc(var(--pu) * 4) rgba(61, 33, 80, 0.3);
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ph-switch-row.is-on .ph-switch {
+    background: #ff8fc4;
+}
+
+.ph-switch-row.is-on .ph-switch-knob {
+    transform: translateX(calc(var(--pu) * 20));
+}
+
+/* ---- Quests page ------------------------------------------------------------ */
+
+.ph-page {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: calc(var(--pu) * 10) calc(var(--pu) * 14) calc(var(--pu) * 34);
+}
+
+.ph-page[hidden],
+.ph-home[hidden] {
+    display: none;
+}
+
+.ph-page-head {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--pu) * 8);
+    margin-bottom: calc(var(--pu) * 10);
+}
+
+.ph-back {
+    width: calc(var(--pu) * 40);
+    height: calc(var(--pu) * 40);
+    border: 0;
+    border-radius: 50%;
+    padding: calc(var(--pu) * 8);
+    background: #ffffff;
+    box-shadow: 0 calc(var(--pu) * 3) 0 #ead9ff;
+    color: var(--ph-ink);
+    cursor: pointer;
+}
+
+.ph-back svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.ph-page-title {
+    flex: 1;
+    font-size: max(15px, calc(var(--pu) * 23));
+}
+
+.ph-page-count {
+    font-size: max(11px, calc(var(--pu) * 15));
+    color: #8a6aa8;
+}
+
+.ph-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--pu) * 8);
+    padding-bottom: calc(var(--pu) * 6);
+    scrollbar-width: none;
+}
+
+.ph-list::-webkit-scrollbar {
+    display: none;
+}
+
+.ph-row {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--pu) * 10);
+    padding: calc(var(--pu) * 10) calc(var(--pu) * 12);
+    border: 0;
+    border-radius: calc(var(--pu) * 18);
+    background: #ffffff;
+    box-shadow: 0 calc(var(--pu) * 3) 0 #ead9ff;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.ph-row:disabled {
+    cursor: default;
+}
+
+.ph-row[hidden] {
+    display: none;
+}
+
+.ph-row-dot {
+    flex: none;
+    width: calc(var(--pu) * 14);
+    height: calc(var(--pu) * 14);
+    border-radius: 50%;
+    background: #ff8fc4;
+    box-shadow: 0 0 0 calc(var(--pu) * 3) #ffe0f0;
+}
+
+.ph-row.is-tracked .ph-row-dot {
+    background: #ffffff;
+    box-shadow: 0 0 0 calc(var(--pu) * 4) #ff8fc4;
+}
+
+.ph-row[data-state="next"] {
+    opacity: 0.6;
+}
+
+.ph-row[data-state="next"] .ph-row-dot {
+    background: #d9c8ff;
+    box-shadow: none;
+}
+
+.ph-row[data-state="done"] {
+    opacity: 0.55;
+}
+
+.ph-row[data-state="done"] .ph-row-dot {
+    background: #5fd393;
+    box-shadow: none;
+}
+
+.ph-row-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--pu) * 2);
+}
+
+.ph-row-title {
+    font-size: max(13px, calc(var(--pu) * 18));
+    line-height: 1.15;
+}
+
+.ph-row-goal {
+    font-size: max(11px, calc(var(--pu) * 14));
+    line-height: 1.2;
+    color: #6f5788;
+}
+
+.ph-row-tag {
+    flex: none;
+    padding: 0 calc(var(--pu) * 7);
+    border-radius: 99px;
+    background: #f3eaff;
+    color: #8a6aa8;
+    font-size: max(10px, calc(var(--pu) * 12));
+    line-height: 1.7;
+}
+
+/* ---- Put away --------------------------------------------------------------- */
+
+.ph-close {
+    position: absolute;
+    top: calc(var(--pu) * -10);
+    right: calc(var(--pu) * -14);
+    width: max(36px, calc(var(--pu) * 52));
+    height: max(36px, calc(var(--pu) * 52));
+    padding: 0;
+    border-radius: 50%;
+    border: calc(var(--pu) * 4) solid #ffffff;
+    background: #ff8fc4;
+    box-shadow: 0 calc(var(--pu) * 4) calc(var(--pu) * 10) rgba(40, 10, 60, 0.4);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.ph-close svg {
+    display: block;
+    width: 50%;
+    height: 50%;
+}
+
+.ph-close-key {
+    position: absolute;
+    top: calc(var(--pu) * 46);
+    right: calc(var(--pu) * -22);
+    padding: 0 calc(var(--pu) * 6);
+    border-radius: calc(var(--pu) * 6);
+    background: rgba(34, 18, 48, 0.82);
+    color: #ffffff;
+    font-size: calc(var(--pu) * 12);
+    line-height: 1.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .lui-opening .ph-phone,
+    .lui-closing .ph-phone,
+    .ph-app.is-guided .ph-tile,
+    .ph-app.is-guided .ph-hand {
+        animation: none !important;
+    }
+
+    .ph-switch,
+    .ph-switch-knob {
+        transition: none;
+    }
+}
+
+/* ---- Blueprints (Blueprints.js) -------------------------------------------- */
+
+.ph-bp[hidden] {
+    display: none;
+}
+
+.ph-bp-empty {
+    margin-top: calc(var(--pu) * 30);
+    text-align: center;
+    font-size: calc(var(--pu) * 15);
+    color: #8a6aa8;
+}
+
+.ph-bp-card {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--pu) * 8);
+    padding: calc(var(--pu) * 12) calc(var(--pu) * 14);
+    border: 0;
+    border-radius: calc(var(--pu) * 20);
+    background: #ffffff;
+    box-shadow: 0 calc(var(--pu) * 3) 0 #ead9ff;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.ph-bp-card.is-active {
+    box-shadow: 0 0 0 calc(var(--pu) * 3) #ff8fc4, 0 calc(var(--pu) * 4) 0 #ffd0e6;
+}
+
+.ph-bp-card-top,
+.ph-bp-card-bottom {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--pu) * 8);
+}
+
+.ph-bp-name {
+    flex: 1;
+    min-width: 0;
+    font-size: calc(var(--pu) * 17);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ph-bp-tag {
+    flex: none;
+    padding: 0 calc(var(--pu) * 8);
+    border-radius: 99px;
+    background: #ffe0f0;
+    color: #d0457f;
+    font-size: calc(var(--pu) * 11);
+    line-height: 1.8;
+}
+
+.ph-bp-card.is-done .ph-bp-tag {
+    background: #dcf7e8;
+    color: #2f9a62;
+}
+
+.ph-bp-bar {
+    flex: 1;
+    height: calc(var(--pu) * 10);
+    border-radius: 99px;
+    background: #f1e7ff;
+    overflow: hidden;
+}
+
+.ph-bp-bar.is-big {
+    flex: none;
+    height: calc(var(--pu) * 16);
+}
+
+.ph-bp-bar i {
+    display: block;
+    height: 100%;
+    min-width: calc(var(--pu) * 10);
+    border-radius: inherit;
+    background: linear-gradient(90deg, #ff9ccc, #c9a0ff);
+}
+
+.ph-bp-card.is-done .ph-bp-bar i,
+.ph-bp-progress.is-done .ph-bp-bar i {
+    background: linear-gradient(90deg, #7ce0a6, #5fd393);
+}
+
+.ph-bp-count {
+    flex: none;
+    font-size: calc(var(--pu) * 14);
+    color: #8a6aa8;
+}
+
+.ph-bp-progress {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--pu) * 6);
+    padding: calc(var(--pu) * 12) calc(var(--pu) * 14);
+    border-radius: calc(var(--pu) * 20);
+    background: #ffffff;
+    box-shadow: 0 calc(var(--pu) * 3) 0 #ead9ff;
+}
+
+.ph-bp-line {
+    font-size: calc(var(--pu) * 14);
+}
+
+.ph-bp-line.is-ready {
+    color: #2f9a62;
+}
+
+.ph-bp-actions {
+    flex: none;
+    display: flex;
+    gap: calc(var(--pu) * 8);
+}
+
+.ph-bp-actions:empty {
+    display: none;
+}
+
+.ph-bp-btn {
+    flex: 1;
+    min-height: calc(var(--pu) * 42);
+    border: 0;
+    border-radius: 99px;
+    background: #ffffff;
+    box-shadow: 0 calc(var(--pu) * 3) 0 #ead9ff;
+    color: var(--ph-ink);
+    font: inherit;
+    font-size: calc(var(--pu) * 15);
+    cursor: pointer;
+}
+
+.ph-bp-btn.is-primary {
+    background: #ff8fc4;
+    box-shadow: 0 calc(var(--pu) * 3) 0 #e2679f;
+    color: #ffffff;
+}
+
+.ph-bp-btn:active,
+.ph-bp-show:active,
+.ph-bp-card:active {
+    transform: translateY(calc(var(--pu) * 2));
+}
+
+.ph-bp-section {
+    flex: none;
+    margin-top: calc(var(--pu) * 6);
+    font-size: calc(var(--pu) * 15);
+    color: #8a6aa8;
+}
+
+.ph-bp-hint {
+    flex: none;
+    margin-top: calc(var(--pu) * -4);
+    font-size: calc(var(--pu) * 12);
+    color: #a58bbf;
+}
+
+.ph-bp-row {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--pu) * 10);
+    padding: calc(var(--pu) * 8) calc(var(--pu) * 10);
+    border-radius: calc(var(--pu) * 18);
+    background: #ffffff;
+    box-shadow: 0 calc(var(--pu) * 3) 0 #ead9ff;
+}
+
+.ph-bp-icon {
+    flex: none;
+    width: calc(var(--pu) * 40);
+    height: calc(var(--pu) * 40);
+    border-radius: calc(var(--pu) * 12);
+    background-color: #f6f0ff;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+
+.ph-bp-icon.is-plain {
+    background-image: linear-gradient(135deg, #e6d6ff, #ffd6ea);
+}
+
+.ph-bp-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--pu) * 2);
+}
+
+.ph-bp-row-name {
+    font-size: calc(var(--pu) * 15);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ph-bp-row-sub {
+    font-size: calc(var(--pu) * 12);
+    color: #6f5788;
+}
+
+.ph-bp-show {
+    flex: none;
+    padding: 0 calc(var(--pu) * 12);
+    min-height: calc(var(--pu) * 32);
+    border: 0;
+    border-radius: 99px;
+    background: #ff8fc4;
+    box-shadow: 0 calc(var(--pu) * 2) 0 #e2679f;
+    color: #ffffff;
+    font: inherit;
+    font-size: calc(var(--pu) * 13);
+    cursor: pointer;
+}
+
+/* The blueprint being built, at the top of the screen while decorating. */
+.bp-chip {
+    position: absolute;
+    top: calc(var(--hud, 1px) * 18);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: calc(var(--hud, 1px) * 12);
+    max-width: calc(var(--hud, 1px) * 520);
+    padding: calc(var(--hud, 1px) * 10) calc(var(--hud, 1px) * 20);
+    border-radius: 99px;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 calc(var(--hud, 1px) * 4) 0 #ead9ff;
+    color: #3d2150;
+    font-size: calc(var(--hud, 1px) * 22);
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.bp-chip[hidden] {
+    display: none;
+}
+
+.bp-chip-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: calc(var(--hud, 1px) * 260);
+}
+
+.bp-chip-bar {
+    width: calc(var(--hud, 1px) * 130);
+    height: calc(var(--hud, 1px) * 12);
+    border-radius: 99px;
+    background: #f1e7ff;
+    overflow: hidden;
+}
+
+.bp-chip-fill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #ff9ccc, #c9a0ff);
+    transition: width 0.4s ease-out;
+}
+
+.bp-chip.is-done .bp-chip-fill {
+    background: linear-gradient(90deg, #7ce0a6, #5fd393);
+}
+
+.bp-chip-count {
+    color: #8a6aa8;
+}
+
+/* ---- Minigames (Minigames.js): Music Beach's shows to queue for ---------- */
+
+.ph-mg-body {
+    gap: calc(var(--pu) * 10);
+}
+
+/* The wait, while she's queued. */
+.ph-mg-wait {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--pu) * 10);
+    padding: calc(var(--pu) * 12) calc(var(--pu) * 14);
+    border-radius: calc(var(--pu) * 20);
+    background: #fff4fa;
+    box-shadow: 0 0 0 calc(var(--pu) * 3) #ff8fc4, 0 calc(var(--pu) * 4) 0 #ffd0e6;
+}
+
+.ph-mg-wait-top {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--pu) * 10);
+}
+
+.ph-mg-dot {
+    flex: none;
+    width: calc(var(--pu) * 12);
+    height: calc(var(--pu) * 12);
+    border-radius: 50%;
+    background: #ff8fc4;
+    animation: ph-mg-pulse 1.2s ease-in-out infinite;
+}
+
+.ph-mg-wait.is-found .ph-mg-dot {
+    background: #5fcf8a;
+    animation: none;
+}
+
+@keyframes ph-mg-pulse {
+    50% { transform: scale(0.6); opacity: 0.5; }
+}
+
+.ph-mg-wait-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.ph-mg-wait-label {
+    font-size: max(13px, calc(var(--pu) * 17));
+}
+
+.ph-mg-wait-sub {
+    font-size: max(11px, calc(var(--pu) * 13));
+    color: #8a6aa8;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ph-mg-wait-nums {
+    flex: none;
+    font-size: max(11px, calc(var(--pu) * 14));
+    color: #8a6aa8;
+    white-space: pre;
+    font-variant-numeric: tabular-nums;
+}
+
+.ph-mg-actions {
+    display: flex;
+    gap: calc(var(--pu) * 8);
+}
+
+/* The shows: square tiles, two to a row, each its picture with its name under it. */
+.ph-mg-grid {
+    flex: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: calc(var(--pu) * 12);
+    padding: calc(var(--pu) * 4) calc(var(--pu) * 2) 0;
+}
+
+.ph-mg-tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--pu) * 6);
+    padding: calc(var(--pu) * 6);
+    border: 0;
+    border-radius: calc(var(--pu) * 22);
+    background: #ffffff;
+    box-shadow: 0 calc(var(--pu) * 4) 0 #ead9ff;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.ph-mg-tile-art {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: calc(var(--pu) * 17);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.ph-mg-tile-label {
+    padding-bottom: calc(var(--pu) * 4);
+    font-size: max(12px, calc(var(--pu) * 16));
+    line-height: 1.1;
+    text-align: center;
+}
+
+.ph-mg-tile:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.ph-mg-tile:active:not(:disabled) {
+    transform: translateY(calc(var(--pu) * 3));
+    box-shadow: 0 calc(var(--pu) * 1) 0 #ead9ff;
+}
+
+.ph-mg-hint {
+    flex: none;
+    padding: calc(var(--pu) * 2) calc(var(--pu) * 8) calc(var(--pu) * 10);
+    font-size: max(10px, calc(var(--pu) * 12));
+    line-height: 1.25;
+    color: #8a6aa8;
+    text-align: center;
+}

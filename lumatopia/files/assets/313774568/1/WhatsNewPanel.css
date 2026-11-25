@@ -1,0 +1,670 @@
+/* What's new (HtmlUi/WhatsNewView.js, Scripts/WhatsNew.js): the HUD button
+   and the panel. Panel sizes are multiples of --unit (one design pixel, see
+   LumatopiaUi.css); the HUD button is sized from --wn-s, the HUD's own icon
+   box in page pixels, so it matches the PlayCanvas buttons above it.
+   Motion is transforms and opacity only. */
+
+/* ---- The HUD button ----------------------------------------------------- */
+
+.wn-hud {
+    --wn-s: 56px;
+    position: absolute;
+    z-index: 1;
+    width: calc(var(--wn-s) * 1.6);
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: auto;
+}
+
+.wn-hud-key {
+    --outline: #3b1d58;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: calc(var(--wn-s) * 0.3);
+    font-size: calc(var(--wn-s) * 0.27);
+    --outline-width: calc(var(--wn-s) * 0.035);
+    color: #fff;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.wn-hud-icon {
+    position: relative;
+    display: block;
+    width: var(--wn-s);
+    height: var(--wn-s);
+    animation: wn-hud-pop 6s ease-in-out infinite;
+    transition: filter 0.12s ease-out;
+}
+
+.wn-hud:hover .wn-hud-icon { filter: brightness(1.08); }
+.wn-hud:active .wn-hud-icon { transform: scale(0.92); animation: none; }
+
+/* The disc fills the lower part of the box; the kids stand in it, free above
+   its middle (popping well out of the top) and cut to its inside below. */
+.wn-hud-disc {
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    bottom: 2%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #4a1c68;
+    box-shadow:
+        inset 0 0 0 calc(var(--wn-s) * 0.045) #ff80c4,
+        0 0 0 calc(var(--wn-s) * 0.03) #4a1c68,
+        0 0 calc(var(--wn-s) * 0.22) rgba(255, 128, 196, 0.75);
+    animation: wn-hud-glow 2.4s ease-in-out infinite;
+}
+
+.wn-hud-backdrop {
+    position: absolute;
+    inset: calc(var(--wn-s) * 0.045);
+    border-radius: 50%;
+    background-size: cover;
+}
+
+.wn-hud-shine {
+    position: absolute;
+    top: -20%;
+    left: -70%;
+    width: 45%;
+    height: 140%;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 240, 250, 0.55), rgba(255, 255, 255, 0));
+    transform: skewX(-18deg);
+    animation: wn-shine 4.5s ease-in-out infinite;
+}
+
+.wn-hud-kids {
+    position: absolute;
+    left: calc(var(--wn-s) * 0.045 - 4%);
+    right: calc(var(--wn-s) * 0.045 - 4%);
+    top: -58%;
+    bottom: calc(2% + var(--wn-s) * 0.045);
+    border-radius: 0 0 50% 50% / 0 0 30% 30%;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.wn-hud-duo {
+    position: absolute;
+    left: -6%;
+    right: -6%;
+    bottom: -4%;
+    height: 100%;
+    background-size: contain;
+    background-position: center bottom;
+    transform-origin: 50% 100%;
+    animation: wn-kids-bob 2.6s ease-in-out infinite;
+}
+
+.wn-hud-sparkle {
+    position: absolute;
+    width: 22%;
+    height: 22%;
+    pointer-events: none;
+    animation: wn-twinkle 1.8s ease-in-out infinite;
+}
+
+.wn-hud-sparkle-1 { left: -8%; top: 30%; }
+.wn-hud-sparkle-2 { right: -6%; top: 58%; width: 17%; height: 17%; animation-delay: -0.9s; }
+
+.wn-hud-new {
+    --outline: #a01458;
+    --outline-width: calc(var(--wn-s) * 0.03);
+    position: absolute;
+    right: -26%;
+    top: -14%;
+    padding: calc(var(--wn-s) * 0.03) calc(var(--wn-s) * 0.09) calc(var(--wn-s) * 0.04);
+    border-radius: calc(var(--wn-s) * 0.2);
+    background: linear-gradient(180deg, #ff6fb4, #ff2f86);
+    box-shadow:
+        0 0 0 calc(var(--wn-s) * 0.03) #fff,
+        0 calc(var(--wn-s) * 0.04) 0 #a01458;
+    font-size: calc(var(--wn-s) * 0.22);
+    line-height: 1;
+    color: #fff;
+    white-space: nowrap;
+    transform: rotate(12deg);
+    animation: wn-tag-wiggle 6s ease-in-out infinite;
+}
+
+.wn-hud-label {
+    --outline: #3b1d58;
+    --outline-width: calc(var(--wn-s) * 0.04);
+    margin-top: calc(var(--wn-s) * 0.03);
+    font-size: calc(var(--wn-s) * 0.3);
+    line-height: 1.05;
+    color: #fff;
+    white-space: nowrap;
+}
+
+.wn-hud.is-flying { pointer-events: none; }
+.wn-hud.is-flying .wn-hud-icon { animation: none; }
+.wn-hud.is-flying .wn-hud-label,
+.wn-hud.is-flying .wn-hud-key {
+    opacity: 0;
+    transition: opacity 0.18s ease-out;
+}
+
+/* Where the button lands in the phone: a ring and six sparks. */
+.wn-poof {
+    --wn-s: 56px;
+    position: absolute;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+.wn-poof::before {
+    content: '';
+    position: absolute;
+    left: calc(var(--wn-s) * -0.5);
+    top: calc(var(--wn-s) * -0.5);
+    width: var(--wn-s);
+    height: var(--wn-s);
+    border-radius: 50%;
+    border: calc(var(--wn-s) * 0.07) solid #ff9bd0;
+    animation: wn-ring 0.6s ease-out both;
+}
+
+.wn-poof-spark {
+    position: absolute;
+    left: calc(var(--wn-s) * -0.07);
+    top: calc(var(--wn-s) * -0.07);
+    width: calc(var(--wn-s) * 0.14);
+    height: calc(var(--wn-s) * 0.14);
+    border-radius: 50%;
+    background: #ffe27a;
+    box-shadow: 0 0 calc(var(--wn-s) * 0.1) #fff3b0;
+    animation: wn-spark 0.7s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+
+/* ---- The panel ------------------------------------------------------------ */
+
+/* The game's light pastel look (as Daily Login and Settings): a cream window
+   in a pink frame with the orange title ribbon hanging over its top edge.
+   Sized to the window, so a phone held sideways fills its height. */
+.wn-overlay {
+    --unit: min(calc(var(--view-w, 100vw) * 0.96 / 1300), calc(var(--view-h, 100vh) * 0.92 / 860), 1px);
+    --wn-ink: #5b3f78;
+    --wn-ink-soft: #8a6fa8;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(70, 30, 100, 0.32);
+    pointer-events: auto;
+}
+
+.wn-window {
+    --wn-btn-h: max(40px, calc(var(--unit) * 100));
+    position: relative;
+    display: flex;
+    width: calc(var(--unit) * 1260);
+    height: calc(var(--unit) * 740);
+    margin-top: calc(var(--unit) * 50);
+    border-radius: calc(var(--unit) * 48);
+    background:
+        radial-gradient(circle at 8% 8%, rgba(255, 214, 236, 0.8) 0, rgba(255, 214, 236, 0) calc(var(--unit) * 340)),
+        radial-gradient(circle at 94% 94%, rgba(214, 236, 255, 0.8) 0, rgba(214, 236, 255, 0) calc(var(--unit) * 380)),
+        linear-gradient(#fffaf6, #fff3f9);
+    border: max(3px, calc(var(--unit) * 9)) solid #ffd6ea;
+    box-shadow:
+        0 0 0 max(1px, calc(var(--unit) * 3)) #f590c0,
+        inset 0 0 0 max(1px, calc(var(--unit) * 3)) #ffb8da,
+        0 calc(var(--unit) * 12) calc(var(--unit) * 34) rgba(90, 40, 120, 0.35);
+    color: var(--wn-ink);
+}
+
+.wn-titlebar {
+    position: absolute;
+    left: 50%;
+    top: calc(var(--unit) * -60);
+    z-index: 4;
+    min-width: calc(var(--unit) * 520);
+    height: calc(var(--unit) * 100);
+    padding: 0 calc(var(--unit) * 70) calc(var(--unit) * 6);
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-size: 100% 100%;
+}
+
+.wn-title {
+    --outline: #cc4d00;
+    --outline-width: max(1px, calc(var(--unit) * 3.5));
+    color: #ffcc4d;
+    font-size: max(17px, calc(var(--unit) * 50));
+    letter-spacing: calc(var(--unit) * 1);
+    white-space: nowrap;
+}
+
+.wn-close {
+    position: absolute;
+    top: calc(var(--unit) * -44);
+    right: calc(var(--unit) * -44);
+    z-index: 6;
+    width: max(40px, calc(var(--unit) * 112));
+    height: max(40px, calc(var(--unit) * 112));
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.wn-close:hover { transform: scale(1.08) rotate(6deg); }
+.wn-close:active { transform: scale(0.94); }
+
+/* ---- The topics (left) */
+
+.wn-side {
+    flex: 0 0 calc(var(--unit) * 330);
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: calc(var(--unit) * 64) calc(var(--unit) * 8) calc(var(--unit) * 30) calc(var(--unit) * 34);
+}
+
+.wn-head { margin-bottom: calc(var(--unit) * 14); }
+
+.wn-subtitle {
+    font-size: max(11px, calc(var(--unit) * 26));
+    color: #f07ab4;
+}
+
+.wn-subtitle::before {
+    content: '\2726';
+    margin-right: calc(var(--unit) * 10);
+    color: #ffc64d;
+}
+
+.wn-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--unit) * 14);
+    padding: calc(var(--unit) * 6) calc(var(--unit) * 14) calc(var(--unit) * 12) calc(var(--unit) * 4);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+}
+
+.wn-list::-webkit-scrollbar { display: none; }
+
+.wn-row {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--unit) * 16);
+    min-height: max(34px, calc(var(--unit) * 96));
+    padding: calc(var(--unit) * 10) calc(var(--unit) * 16) calc(var(--unit) * 10) calc(var(--unit) * 12);
+    border-radius: calc(var(--unit) * 28);
+    background: #ffffff;
+    box-shadow:
+        inset 0 0 0 max(1px, calc(var(--unit) * 3)) #ffe0ef,
+        0 calc(var(--unit) * 5) 0 #f3d3e6;
+    text-align: left;
+    transition: transform 0.12s ease-out, filter 0.15s ease-out, background 0.15s ease-out;
+}
+
+.wn-row:hover { background: #fff6fb; }
+.wn-row:active { transform: scale(0.97); }
+
+.wn-row.is-active {
+    background: linear-gradient(#ffb0d8, #f57bb6);
+    box-shadow:
+        inset 0 calc(var(--unit) * 3) 0 rgba(255, 255, 255, 0.35),
+        0 calc(var(--unit) * 5) 0 #d65f9a,
+        0 0 calc(var(--unit) * 22) rgba(255, 143, 196, 0.55);
+    transform: translateX(calc(var(--unit) * 10));
+}
+
+.wn-row-thumb {
+    flex: 0 0 auto;
+    width: max(28px, calc(var(--unit) * 72));
+    height: max(28px, calc(var(--unit) * 72));
+    border-radius: 50%;
+    background-size: 150%;
+    background-position: 50% 18%;
+    background-color: #f6effe;
+    box-shadow: 0 0 0 max(1.5px, calc(var(--unit) * 4)) #ffd6ea;
+}
+
+.wn-row.is-active .wn-row-thumb { box-shadow: 0 0 0 max(1.5px, calc(var(--unit) * 4)) #ffffff; }
+
+.wn-row-name {
+    min-width: 0;
+    font-size: max(12px, calc(var(--unit) * 30));
+    line-height: 1.1;
+    color: var(--wn-ink);
+}
+
+.wn-row.is-active .wn-row-name {
+    --outline: #d65f9a;
+    --outline-width: max(1px, calc(var(--unit) * 2.5));
+    color: #ffffff;
+    text-shadow:
+        calc(var(--outline-width) * -1) 0 0 var(--outline),
+        var(--outline-width) 0 0 var(--outline),
+        0 calc(var(--outline-width) * -1) 0 var(--outline),
+        0 var(--outline-width) 0 var(--outline);
+}
+
+/* ---- The picked topic (right) */
+
+.wn-main {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--unit) * 36);
+    padding: calc(var(--unit) * 56) calc(var(--unit) * 48) calc(var(--unit) * 40) calc(var(--unit) * 20);
+}
+
+.wn-stage {
+    --s: calc(var(--unit) * 500);
+    position: relative;
+    flex: 0 0 auto;
+    width: var(--s);
+    height: var(--s);
+}
+
+.wn-frame {
+    position: absolute;
+    inset: 0;
+    border-radius: calc(var(--s) * 0.07);
+    overflow: hidden;
+    border: max(3px, calc(var(--unit) * 8)) solid #ffffff;
+    box-shadow:
+        0 0 0 max(1px, calc(var(--unit) * 3)) #f590c0,
+        0 calc(var(--unit) * 12) calc(var(--unit) * 30) rgba(150, 70, 140, 0.28);
+    background: #f6effe;
+}
+
+/* The picture drifts slowly, so it feels alive. */
+.wn-art {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    animation: wn-drift 14s ease-in-out infinite alternate;
+}
+
+.wn-shine {
+    position: absolute;
+    top: -20%;
+    left: -60%;
+    width: 36%;
+    height: 140%;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0));
+    transform: skewX(-18deg);
+    animation: wn-shine 6s ease-in-out infinite;
+}
+
+.wn-tag {
+    --outline: #d65f9a;
+    --outline-width: max(1px, calc(var(--unit) * 2.5));
+    position: absolute;
+    left: calc(var(--s) * -0.04);
+    top: calc(var(--s) * 0.05);
+    z-index: 2;
+    padding: calc(var(--unit) * 8) calc(var(--unit) * 24) calc(var(--unit) * 10);
+    border-radius: calc(var(--unit) * 30);
+    background: linear-gradient(#ffb0d8, #f57bb6);
+    box-shadow:
+        0 0 0 max(1.5px, calc(var(--unit) * 4)) #ffffff,
+        0 calc(var(--unit) * 5) 0 #d65f9a;
+    font-size: max(12px, calc(var(--unit) * 30));
+    color: #ffffff;
+    white-space: nowrap;
+    transform: rotate(-6deg);
+}
+
+/* Music notes and sparkles floating round the picture. */
+.wn-note {
+    position: absolute;
+    width: calc(var(--s) * 0.1);
+    height: calc(var(--s) * 0.1);
+    z-index: 3;
+    color: #ff8fc4;
+    filter: drop-shadow(0 0 calc(var(--unit) * 2) #ffffff) drop-shadow(0 calc(var(--unit) * 3) calc(var(--unit) * 4) rgba(150, 70, 140, 0.35));
+    pointer-events: none;
+    animation: wn-float 3.6s ease-in-out infinite;
+}
+
+.wn-note svg { width: 100%; height: 100%; display: block; }
+.wn-note-1 { right: -5%; top: 8%; }
+.wn-note-2 { right: -7%; bottom: 22%; color: #6ec4ff; width: calc(var(--s) * 0.08); height: calc(var(--s) * 0.08); animation-delay: -1.2s; }
+.wn-note-3 { left: -6%; bottom: 8%; color: #ffbf3d; animation-delay: -2.1s; }
+.wn-note-4 { left: 38%; top: -6%; color: #b48cff; width: calc(var(--s) * 0.07); height: calc(var(--s) * 0.07); animation-delay: -0.6s; }
+
+.wn-sparkle {
+    position: absolute;
+    z-index: 3;
+    width: 9%;
+    height: 9%;
+    pointer-events: none;
+    animation: wn-twinkle 1.8s ease-in-out infinite;
+}
+
+.wn-sparkle-1 { right: 6%; top: -4%; }
+.wn-sparkle-2 { left: -4%; top: 44%; width: 7%; height: 7%; animation-delay: -0.7s; }
+.wn-sparkle-3 { right: 18%; bottom: -4%; width: 8%; height: 8%; animation-delay: -1.3s; }
+
+.wn-copy {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: calc(var(--unit) * 20);
+}
+
+.wn-topic-title {
+    font-size: max(18px, calc(var(--unit) * 52));
+    line-height: 1.05;
+    color: #f05a9d;
+}
+
+.wn-text {
+    font-size: max(12px, calc(var(--unit) * 29));
+    line-height: 1.3;
+    color: var(--wn-ink);
+}
+
+/* The green button art is 180 x 85 and keeps its true shape at any width:
+   only the flat middle stretches, under two true-shape end caps (as the
+   Vampire Vault's buttons). */
+.wn-go {
+    --outline: #2f8a1a;
+    position: relative;
+    isolation: isolate;
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: calc(var(--wn-btn-h) * 180 / 85);
+    height: var(--wn-btn-h);
+    margin-top: calc(var(--unit) * 10);
+    padding: 0 calc(var(--wn-btn-h) * 0.38) calc(var(--wn-btn-h) * 0.08);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    font-size: max(13px, calc(var(--unit) * 34));
+    color: #ffffff;
+    white-space: nowrap;
+    animation: wn-go-pulse 1.8s ease-in-out infinite;
+    transition: filter 0.15s ease-out;
+}
+
+.wn-go::before,
+.wn-go::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    aspect-ratio: 90 / 85;
+    background-image: inherit;
+    background-size: 200% 100%;
+    background-repeat: no-repeat;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.wn-go::before { left: 0; background-position: left center; }
+.wn-go::after { right: 0; background-position: right center; }
+.wn-go:hover { filter: brightness(1.06); }
+.wn-go:active { transform: scale(0.95); animation: none; }
+
+.wn-stage.is-switching { animation: wn-switch-art 0.42s cubic-bezier(0.34, 1.4, 0.64, 1) both; }
+.wn-copy.is-switching { animation: wn-switch-copy 0.36s ease-out both; }
+
+/* ---- Phones held upright: one column, the topics as a row of chips ------------ */
+
+.lui-portrait .wn-overlay {
+    --unit: min(calc(var(--view-w, 100vw) * 0.95 / 860), calc(var(--view-h, 100vh) * 0.9 / 1540), 1px);
+}
+
+.lui-portrait .wn-window {
+    flex-direction: column;
+    width: calc(var(--unit) * 820);
+    height: auto;
+    max-height: calc(var(--unit) * 1480);
+}
+
+.lui-portrait .wn-side {
+    flex: 0 0 auto;
+    padding: calc(var(--unit) * 64) calc(var(--unit) * 36) 0;
+}
+
+.lui-portrait .wn-head { text-align: center; }
+
+.lui-portrait .wn-list {
+    flex-direction: row;
+    gap: calc(var(--unit) * 14);
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: calc(var(--unit) * 10) calc(var(--unit) * 4) calc(var(--unit) * 16);
+}
+
+.lui-portrait .wn-row {
+    flex-direction: column;
+    gap: calc(var(--unit) * 8);
+    width: calc(var(--unit) * 150);
+    min-height: 0;
+    padding: calc(var(--unit) * 12) calc(var(--unit) * 8) calc(var(--unit) * 14);
+    text-align: center;
+}
+
+.lui-portrait .wn-row.is-active { transform: translateY(calc(var(--unit) * -6)); }
+.lui-portrait .wn-row-thumb { width: calc(var(--unit) * 86); height: calc(var(--unit) * 86); }
+.lui-portrait .wn-row-name { font-size: max(11px, calc(var(--unit) * 24)); }
+
+.lui-portrait .wn-main {
+    flex-direction: column;
+    gap: calc(var(--unit) * 26);
+    padding: calc(var(--unit) * 14) calc(var(--unit) * 44) calc(var(--unit) * 40);
+}
+
+.lui-portrait .wn-stage { --s: calc(var(--unit) * 600); }
+.lui-portrait .wn-copy { align-items: center; text-align: center; gap: calc(var(--unit) * 16); }
+.lui-portrait .wn-go { align-self: center; }
+
+/* ---- Motion ----------------------------------------------------------------- */
+
+@keyframes wn-hud-pop {
+    0%, 14%, 100% { transform: scale(1); }
+    4% { transform: scale(1.18) rotate(-4deg); }
+    8% { transform: scale(0.96) rotate(3deg); }
+    11% { transform: scale(1.04); }
+    50% { transform: scale(1.02); }
+}
+
+@keyframes wn-hud-glow {
+    0%, 100% { box-shadow: inset 0 0 0 calc(var(--wn-s) * 0.045) #ff80c4, 0 0 0 calc(var(--wn-s) * 0.03) #4a1c68, 0 0 calc(var(--wn-s) * 0.14) rgba(255, 128, 196, 0.5); }
+    50% { box-shadow: inset 0 0 0 calc(var(--wn-s) * 0.045) #ff80c4, 0 0 0 calc(var(--wn-s) * 0.03) #4a1c68, 0 0 calc(var(--wn-s) * 0.3) rgba(255, 128, 196, 0.95); }
+}
+
+@keyframes wn-kids-bob {
+    0%, 100% { transform: translateY(0) scale(1, 1); }
+    50% { transform: translateY(-4%) scale(0.99, 1.02); }
+}
+
+@keyframes wn-tag-wiggle {
+    0%, 16%, 100% { transform: rotate(12deg) scale(1); }
+    3% { transform: rotate(-8deg) scale(1.15); }
+    6% { transform: rotate(18deg) scale(1.1); }
+    9% { transform: rotate(4deg) scale(1.05); }
+    12% { transform: rotate(14deg) scale(1); }
+}
+
+@keyframes wn-twinkle {
+    0%, 100% { transform: scale(0.4) rotate(0deg); opacity: 0.3; }
+    50% { transform: scale(1) rotate(45deg); opacity: 1; }
+}
+
+@keyframes wn-shine {
+    0%, 55% { left: -70%; }
+    85%, 100% { left: 130%; }
+}
+
+@keyframes wn-drift {
+    from { transform: scale(1.02) translate(0, 0); }
+    to { transform: scale(1.09) translate(-1.5%, -1%); }
+}
+
+@keyframes wn-float {
+    0%, 100% { transform: translateY(0) rotate(-8deg); }
+    50% { transform: translateY(-22%) rotate(8deg); }
+}
+
+@keyframes wn-go-pulse {
+    0%, 100% { filter: brightness(1) drop-shadow(0 0 0 rgba(110, 220, 90, 0)); }
+    50% { filter: brightness(1.05) drop-shadow(0 0 calc(var(--unit) * 14) rgba(110, 220, 90, 0.65)); }
+}
+
+@keyframes wn-switch-art {
+    from { transform: scale(0.9) rotate(-2deg); opacity: 0.4; }
+    to { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+@keyframes wn-switch-copy {
+    from { transform: translateY(calc(var(--unit) * 18)); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes wn-ring {
+    from { transform: scale(0.4); opacity: 1; }
+    to { transform: scale(1.7); opacity: 0; }
+}
+
+@keyframes wn-spark {
+    from { transform: rotate(var(--a)) translateX(0) scale(1); opacity: 1; }
+    to { transform: rotate(var(--a)) translateX(calc(var(--wn-s) * 0.95)) scale(0.3); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wn-hud-icon,
+    .wn-hud-disc,
+    .wn-hud-shine,
+    .wn-hud-duo,
+    .wn-hud-new,
+    .wn-hud-sparkle,
+    .wn-art,
+    .wn-shine,
+    .wn-note,
+    .wn-sparkle,
+    .wn-go,
+    .wn-stage.is-switching,
+    .wn-copy.is-switching {
+        animation: none !important;
+    }
+}

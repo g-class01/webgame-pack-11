@@ -1,0 +1,81 @@
+{
+  "After_The_Midnight": {
+    "bpm": 115,
+    "firstBeat": 0.03,
+    "startBar": 3,
+    "duration": 90.005
+  },
+  "Arbaite": {
+    "bpm": 120,
+    "firstBeat": 0.66,
+    "startBar": 2,
+    "duration": 178.032
+  },
+  "We_Rise_Up": {
+    "bpm": 100,
+    "firstBeat": 0.08,
+    "startBar": 2,
+    "duration": 151.019
+  },
+  "Dreamy_at_Night": {
+    "bpm": 100,
+    "firstBeat": 2.93,
+    "startBar": 2,
+    "duration": 60.011
+  },
+  "Dreamy_Skies_Of_a_Lost_Love": {
+    "bpm": 100,
+    "firstBeat": 2.96,
+    "startBar": 1,
+    "duration": 60.011
+  },
+  "City_After_The_Rain": {
+    "title": "The City After the Rain",
+    "bpm": 106.96,
+    "firstBeat": 0.3,
+    "startBar": 2,
+    "duration": 120
+  },
+  "Chiptune": {
+    "title": "Chiptune",
+    "bpm": 144.94,
+    "firstBeat": 1.632,
+    "startBar": 2,
+    "duration": 90.005
+  },
+  "Dance_Dance_Higher": {
+    "title": "Dance Dance Higher",
+    "bpm": 150,
+    "firstBeat": 0.498,
+    "startBar": 3,
+    "duration": 120
+  },
+  "Euphoric_Dance_of_the_Night": {
+    "title": "Euphoric Dance of the Night",
+    "bpm": 139.99,
+    "firstBeat": 1.365,
+    "startBar": 2,
+    "duration": 90.005
+  },
+  "Eurobeat_Night_Drive": {
+    "title": "Eurobeat Night Drive",
+    "bpm": 150.12,
+    "firstBeat": 0.521,
+    "startBar": 3,
+    "duration": 90.005
+  },
+  "Mexe_Mexe_Ate_o_Sol_Nascer": {
+    "title": "Mexe Mexe Até o Sol Nascer",
+    "bpm": 150,
+    "firstBeat": 0.037,
+    "startBar": 3,
+    "duration": 90.005
+  },
+  "Run_it": {
+    "title": "Run It",
+    "bpm": 144.98,
+    "firstBeat": 0.787,
+    "startBar": 3,
+    "duration": 120
+  }
+}

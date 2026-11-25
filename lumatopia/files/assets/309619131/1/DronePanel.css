@@ -1,0 +1,697 @@
+/* Drone delivery panel (Drone.js + DroneView.js).
+   Sizes are in drone units: calc(var(--dr) * N). --dr is chosen so the whole
+   window, with the title bar and close button that hang outside it, fills
+   the screen. Landscape puts the shelf of owned items on the left and the
+   drone's cargo hold on the right; portrait stacks the hold under the shelf.
+   Font sizes carry a pixel floor so phones never get text smaller than that.
+   The look is the game's pastel one, as in the backpack inventory. */
+
+.dr-overlay {
+    --dr: min(
+        calc((var(--view-w, 100vw) - 24px) / 1330),
+        calc((var(--view-h, 100vh) - 24px) / 850)
+    );
+    --dr-ink: #5b3f78;
+    --dr-ink-soft: #a08bb8;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(70, 30, 100, 0.28);
+    pointer-events: auto;
+    touch-action: none;
+}
+
+.lui-portrait .dr-overlay {
+    --dr: min(
+        calc((var(--view-w, 100vw) - 24px) / 948),
+        calc((var(--view-h, 100vh) - 24px) / 1500)
+    );
+}
+
+.dr-window {
+    position: relative;
+    width: calc(var(--dr) * 1240);
+    height: calc(var(--dr) * 770);
+    margin-top: calc(var(--dr) * 50);
+}
+
+.lui-portrait .dr-window {
+    width: calc(var(--dr) * 860);
+    height: calc(var(--dr) * 1420);
+}
+
+/* ---- Frame ---------------------------------------------------------- */
+
+.dr-panel {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: 1fr calc(var(--dr) * 400);
+    column-gap: calc(var(--dr) * 24);
+    padding: calc(var(--dr) * 72) calc(var(--dr) * 32) calc(var(--dr) * 28);
+    border-radius: calc(var(--dr) * 48);
+    background:
+        radial-gradient(circle at 12% 8%, rgba(255, 214, 236, 0.7) 0, rgba(255, 214, 236, 0) calc(var(--dr) * 260)),
+        radial-gradient(circle at 92% 96%, rgba(214, 236, 255, 0.7) 0, rgba(214, 236, 255, 0) calc(var(--dr) * 300)),
+        linear-gradient(#fffaf6, #fff3f9);
+    border: calc(var(--dr) * 9) solid #ffd6ea;
+    box-shadow:
+        0 0 0 calc(var(--dr) * 3) #f590c0,
+        inset 0 0 0 calc(var(--dr) * 3) #ffb8da,
+        0 calc(var(--dr) * 12) calc(var(--dr) * 34) rgba(90, 40, 120, 0.35);
+}
+
+.lui-portrait .dr-panel {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+    row-gap: calc(var(--dr) * 20);
+}
+
+.dr-title {
+    position: absolute;
+    left: 50%;
+    top: calc(var(--dr) * -54);
+    width: calc(var(--dr) * 480);
+    height: calc(var(--dr) * 90);
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-size: 100% 100%;
+}
+
+.dr-title-text {
+    --outline: #cc4d00;
+    --outline-width: max(1px, calc(var(--dr) * 3.5));
+    color: #ffcc4d;
+    font-size: max(16px, calc(var(--dr) * 46));
+    letter-spacing: calc(var(--dr) * 1);
+    white-space: nowrap;
+}
+
+.dr-close {
+    position: absolute;
+    top: calc(var(--dr) * -44);
+    right: calc(var(--dr) * -44);
+    width: max(40px, calc(var(--dr) * 112));
+    height: max(40px, calc(var(--dr) * 112));
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 3;
+}
+
+/* ---- Shelf: tabs, search and owned items ---------------------------- */
+
+.dr-shelf {
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--dr) * 14);
+}
+
+.dr-tabs {
+    flex: none;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: calc(var(--dr) * 12);
+}
+
+.dr-tab {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--dr) * 4);
+    min-width: 0;
+    padding: calc(var(--dr) * 10) calc(var(--dr) * 6) calc(var(--dr) * 8);
+    border-radius: calc(var(--dr) * 26);
+    background: #efe3ff;
+    box-shadow: inset 0 calc(var(--dr) * -5) 0 rgba(0, 0, 0, 0.05), 0 calc(var(--dr) * 5) 0 #d8c3f5;
+    text-align: center;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s, box-shadow 0.2s;
+}
+
+.dr-tab.is-active {
+    background: #ff9fcf;
+    box-shadow:
+        inset 0 0 0 calc(var(--dr) * 4) rgba(255, 255, 255, 0.85),
+        inset 0 calc(var(--dr) * -6) 0 rgba(0, 0, 0, 0.08),
+        0 calc(var(--dr) * 5) 0 #e0679f;
+}
+
+.dr-tab-bubble {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: calc(var(--dr) * 64);
+    height: calc(var(--dr) * 64);
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ffffff 0, #f3e9ff 80%);
+}
+
+.lui-portrait .dr-tab-bubble {
+    width: calc(var(--dr) * 76);
+    height: calc(var(--dr) * 76);
+}
+
+.dr-tab-icon {
+    width: 78%;
+    height: 78%;
+}
+
+.dr-tab-label {
+    max-width: 100%;
+    color: var(--dr-ink);
+    font-size: max(12px, calc(var(--dr) * 26));
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dr-tab-count {
+    position: absolute;
+    right: calc(var(--dr) * 8);
+    top: calc(var(--dr) * 8);
+    min-width: calc(var(--dr) * 30);
+    padding: 0 calc(var(--dr) * 7);
+    border-radius: calc(var(--dr) * 14);
+    background: rgba(255, 255, 255, 0.8);
+    color: var(--dr-ink-soft);
+    font-size: max(10px, calc(var(--dr) * 19));
+    text-align: center;
+}
+
+.dr-tab.is-active .dr-tab-label {
+    color: #ffffff;
+    text-shadow: 0 calc(var(--dr) * 2) 0 rgba(176, 50, 110, 0.5);
+}
+
+.dr-search {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--dr) * 10);
+    height: calc(var(--dr) * 62);
+    padding: 0 calc(var(--dr) * 18);
+    border-radius: calc(var(--dr) * 31);
+    background: #ffffff;
+    box-shadow: inset 0 0 0 calc(var(--dr) * 3) #eadcfb, 0 calc(var(--dr) * 4) 0 #efe3fb;
+    cursor: text;
+}
+
+.dr-search:focus-within {
+    box-shadow: inset 0 0 0 calc(var(--dr) * 3) #ff9fcf, 0 calc(var(--dr) * 4) 0 #f6c5de;
+}
+
+.dr-search-icon {
+    flex: none;
+    width: calc(var(--dr) * 34);
+    height: calc(var(--dr) * 34);
+}
+
+.dr-search-input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: var(--dr-ink);
+    font: inherit;
+    font-size: max(14px, calc(var(--dr) * 28));
+    user-select: text;
+    -webkit-user-select: text;
+}
+
+.dr-search-input::placeholder {
+    color: #c9b6e0;
+}
+
+.dr-search-clear {
+    flex: none;
+    width: calc(var(--dr) * 40);
+    height: calc(var(--dr) * 40);
+    border-radius: 50%;
+    background: #f1e6fb;
+    color: var(--dr-ink-soft);
+    font-size: max(14px, calc(var(--dr) * 30));
+    line-height: 1;
+    text-align: center;
+}
+
+.dr-grid-wrap {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+}
+
+.dr-grid {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-auto-rows: max-content;
+    gap: calc(var(--dr) * 18);
+    padding: calc(var(--dr) * 16) calc(var(--dr) * 8) calc(var(--dr) * 12);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    scrollbar-width: thin;
+    scrollbar-color: #f2a8d0 transparent;
+}
+
+.lui-portrait .dr-grid {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+/* ---- Item cards (shelf and hold share these) ------------------------- */
+
+.dr-item,
+.dr-slot {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: calc(var(--dr) * 28);
+    background: #ffffff;
+    box-shadow:
+        inset 0 0 0 calc(var(--dr) * 3) #f3e9ff,
+        0 calc(var(--dr) * 5) 0 #ecdcfa,
+        0 calc(var(--dr) * 8) calc(var(--dr) * 14) rgba(140, 90, 190, 0.1);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s, opacity 0.2s;
+}
+
+/* Every unit of this stack is already in the hold. */
+.dr-item.is-empty,
+.dr-item:disabled {
+    opacity: 0.4;
+}
+
+.dr-item-icon {
+    position: absolute;
+    inset: 14% 14% 20%;
+    background-repeat: no-repeat;
+}
+
+.dr-stars {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(var(--dr) * -10);
+    display: flex;
+    justify-content: center;
+}
+
+.dr-star {
+    flex: none;
+    width: calc(var(--dr) * 24);
+    height: calc(var(--dr) * 24);
+}
+
+.dr-star + .dr-star {
+    margin-left: calc(var(--dr) * -3);
+}
+
+.dr-count {
+    position: absolute;
+    right: calc(var(--dr) * 6);
+    top: calc(var(--dr) * 14);
+    padding: 0 calc(var(--dr) * 8);
+    border-radius: calc(var(--dr) * 14);
+    background: #c9a6ff;
+    color: #ffffff;
+    font-size: max(10px, calc(var(--dr) * 20));
+}
+
+.dr-price {
+    position: absolute;
+    left: 50%;
+    bottom: calc(var(--dr) * -10);
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: calc(var(--dr) * 4);
+    padding: 0 calc(var(--dr) * 10) 0 calc(var(--dr) * 4);
+    border-radius: calc(var(--dr) * 16);
+    background: #eafff0;
+    box-shadow: inset 0 0 0 calc(var(--dr) * 2.5) #a8e6bd, 0 calc(var(--dr) * 3) 0 #c7efd4;
+    white-space: nowrap;
+}
+
+.dr-coin {
+    flex: none;
+    width: calc(var(--dr) * 28);
+    height: calc(var(--dr) * 28);
+}
+
+.dr-price-text {
+    color: #2f9a58;
+    font-size: max(10px, calc(var(--dr) * 21));
+}
+
+.dr-empty {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 42%;
+    color: var(--dr-ink-soft);
+    font-size: max(14px, calc(var(--dr) * 30));
+    text-align: center;
+    pointer-events: none;
+}
+
+.dr-empty::before {
+    content: '\2726  ';
+    color: #f59ac6;
+}
+
+/* ---- Cargo hold ------------------------------------------------------ */
+
+.dr-hold {
+    position: relative;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: calc(var(--dr) * 14);
+    padding: calc(var(--dr) * 22) calc(var(--dr) * 22) calc(var(--dr) * 24);
+    border-radius: calc(var(--dr) * 36);
+    background:
+        radial-gradient(circle at 80% 0%, rgba(214, 236, 255, 0.9) 0, rgba(214, 236, 255, 0) calc(var(--dr) * 260)),
+        #f6effe;
+    box-shadow: inset 0 0 0 calc(var(--dr) * 3) #eadcfb;
+}
+
+.lui-portrait .dr-hold {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+        "head hint"
+        "slots slots"
+        "total ship";
+    align-items: center;
+    column-gap: calc(var(--dr) * 16);
+    row-gap: calc(var(--dr) * 14);
+    padding: calc(var(--dr) * 18) calc(var(--dr) * 22) calc(var(--dr) * 22);
+}
+
+.dr-hold-head {
+    grid-area: head;
+    display: flex;
+    justify-content: center;
+}
+
+.lui-portrait .dr-hold-head {
+    justify-content: flex-start;
+}
+
+.dr-hold-title {
+    padding: calc(var(--dr) * 4) calc(var(--dr) * 26);
+    border-radius: calc(var(--dr) * 22);
+    background: #9ccfff;
+    box-shadow: inset 0 calc(var(--dr) * -4) 0 rgba(0, 0, 0, 0.07), 0 calc(var(--dr) * 4) 0 #7fb6ea;
+    color: #ffffff;
+    font-size: max(14px, calc(var(--dr) * 32));
+    text-shadow: 0 calc(var(--dr) * 2) 0 rgba(40, 100, 170, 0.45);
+}
+
+.dr-hint {
+    grid-area: hint;
+    color: var(--dr-ink-soft);
+    font-size: max(12px, calc(var(--dr) * 24));
+    line-height: 1.2;
+    text-align: center;
+}
+
+.lui-portrait .dr-hint {
+    text-align: right;
+}
+
+.dr-slots {
+    grid-area: slots;
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(2, calc(var(--dr) * 140));
+    grid-auto-rows: max-content;
+    justify-content: center;
+    align-content: center;
+    gap: calc(var(--dr) * 26) calc(var(--dr) * 26);
+    padding: calc(var(--dr) * 14) calc(var(--dr) * 14) calc(var(--dr) * 16);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #f2a8d0 transparent;
+}
+
+.lui-portrait .dr-slots {
+    grid-template-columns: repeat(var(--dr-slots, 4), minmax(0, calc(var(--dr) * 150)));
+    padding: calc(var(--dr) * 12) 0 calc(var(--dr) * 14);
+}
+
+/* An empty slot is a dashed space waiting for a parcel. */
+.dr-slot {
+    background: rgba(255, 255, 255, 0.45);
+    box-shadow: none;
+    outline: calc(var(--dr) * 4) dashed #dccbf3;
+    outline-offset: calc(var(--dr) * -6);
+}
+
+.dr-slot:not(.is-filled) .dr-price,
+.dr-slot:not(.is-filled) .dr-minus {
+    display: none;
+}
+
+.dr-slot:not(.is-filled)::after {
+    content: '+';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #dccbf3;
+    font-size: max(18px, calc(var(--dr) * 54));
+}
+
+.dr-slot.is-filled {
+    background: #ffffff;
+    outline: none;
+    box-shadow:
+        inset 0 0 0 calc(var(--dr) * 4) #ffc2df,
+        0 calc(var(--dr) * 5) 0 #f6c5de,
+        0 calc(var(--dr) * 8) calc(var(--dr) * 14) rgba(240, 120, 180, 0.15);
+}
+
+/* In the hold the minus sits top right, so the count moves left. */
+.dr-slot .dr-count {
+    right: auto;
+    left: calc(var(--dr) * 6);
+}
+
+/* Tapping a parcel takes one unit back out. */
+.dr-minus {
+    position: absolute;
+    top: calc(var(--dr) * -8);
+    right: calc(var(--dr) * -8);
+    width: calc(var(--dr) * 34);
+    height: calc(var(--dr) * 34);
+    border-radius: 50%;
+    background: #ff8fc4;
+    box-shadow: 0 calc(var(--dr) * 3) 0 #e0679f;
+    color: #ffffff;
+    font-size: max(12px, calc(var(--dr) * 28));
+    line-height: calc(var(--dr) * 32);
+    text-align: center;
+}
+
+.dr-slot.is-bump {
+    animation: dr-bump 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes dr-bump {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.14); }
+    100% { transform: scale(1); }
+}
+
+.dr-away {
+    position: absolute;
+    left: calc(var(--dr) * 22);
+    right: calc(var(--dr) * 22);
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--dr) * 6);
+    padding: calc(var(--dr) * 14) calc(var(--dr) * 18);
+    border-radius: calc(var(--dr) * 26);
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 calc(var(--dr) * 6) calc(var(--dr) * 18) rgba(140, 90, 190, 0.18);
+    color: var(--dr-ink);
+    font-size: max(14px, calc(var(--dr) * 30));
+    z-index: 2;
+}
+
+.dr-away-dots::after {
+    content: '';
+    display: inline-block;
+    width: 1.5em;
+    text-align: left;
+    animation: dr-dots 1.2s steps(4, end) infinite;
+}
+
+@keyframes dr-dots {
+    0% { content: ''; }
+    25% { content: '.'; }
+    50% { content: '..'; }
+    75% { content: '...'; }
+}
+
+.dr-overlay.is-locked .dr-slots {
+    opacity: 0.35;
+}
+
+.dr-total {
+    grid-area: total;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: calc(var(--dr) * 12);
+    padding: calc(var(--dr) * 8) calc(var(--dr) * 12) calc(var(--dr) * 8) calc(var(--dr) * 22);
+    border-radius: calc(var(--dr) * 28);
+    background: #ffffff;
+    box-shadow: inset 0 0 0 calc(var(--dr) * 3) #eadcfb;
+}
+
+.dr-total-label {
+    color: var(--dr-ink);
+    font-size: max(14px, calc(var(--dr) * 32));
+}
+
+.dr-total-amount {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--dr) * 6);
+    padding: calc(var(--dr) * 2) calc(var(--dr) * 16) calc(var(--dr) * 2) calc(var(--dr) * 6);
+    border-radius: calc(var(--dr) * 22);
+    background: #eafff0;
+    box-shadow: inset 0 0 0 calc(var(--dr) * 2.5) #a8e6bd;
+}
+
+.dr-total-amount .dr-coin {
+    width: calc(var(--dr) * 40);
+    height: calc(var(--dr) * 40);
+}
+
+.dr-total-text {
+    color: #2f9a58;
+    font-size: max(14px, calc(var(--dr) * 32));
+}
+
+.dr-ship {
+    grid-area: ship;
+    flex: none;
+    align-self: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: calc(var(--dr) * 330);
+    height: calc(var(--dr) * 92);
+    padding-bottom: calc(var(--dr) * 6);
+    background-size: 100% 100%;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s;
+}
+
+.lui-portrait .dr-ship {
+    width: calc(var(--dr) * 300);
+}
+
+.dr-ship:disabled {
+    opacity: 0.45;
+}
+
+.dr-ship-text {
+    --outline: #336600;
+    --outline-width: max(1px, calc(var(--dr) * 3));
+    color: #ffffff;
+    font-size: max(16px, calc(var(--dr) * 42));
+    white-space: nowrap;
+}
+
+/* ---- Flying parcels -------------------------------------------------- */
+
+.dr-flights {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 30;
+}
+
+/* Quest guide: the tutorial hand taps the next thing to press. */
+.dr-hand {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: calc(var(--unit, 1px) * 130);
+    height: calc(var(--unit, 1px) * 130);
+    pointer-events: none;
+    z-index: 2;
+    animation: dr-hand-tap 1s ease-in-out infinite;
+}
+
+@keyframes dr-hand-tap {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(calc(var(--unit, 1px) * -9), calc(var(--unit, 1px) * -14)); }
+}
+
+.dr-ghost {
+    position: fixed;
+    display: block;
+    background-repeat: no-repeat;
+    will-change: transform;
+    pointer-events: none;
+}
+
+.dr-ghost-launch {
+    animation: dr-launch 0.9s cubic-bezier(0.5, 0, 0.75, 0.4) both;
+}
+
+@keyframes dr-launch {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    25% { transform: translateY(calc(var(--dr, 1px) * 20)) scale(1.12); opacity: 1; }
+    100% { transform: translateY(-110vh) scale(0.6); opacity: 0; }
+}
+
+/* ---- Hover and press --------------------------------------------------
+   Same feel as the other panels: a soft spring up under the mouse, a quick
+   squash when pressed, hover only where there is a real pointer. */
+
+@media (hover: hover) {
+    .dr-close:hover { transform: scale(1.15); }
+    .dr-tab:hover { transform: scale(1.05); z-index: 2; }
+    .dr-item:not(:disabled):hover { transform: scale(1.07); }
+    .dr-slot.is-filled:not(:disabled):hover { transform: scale(1.07); }
+    .dr-ship:not(:disabled):hover { transform: scale(1.06); }
+}
+
+.dr-close:active,
+.dr-tab:active,
+.dr-item:active,
+.dr-slot:active,
+.dr-ship:active {
+    transition-duration: 0.1s;
+}
+
+.dr-close:active { transform: scale(0.88); }
+.dr-tab:active { transform: scale(0.95); }
+.dr-item:not(:disabled):active { transform: scale(0.94); }
+.dr-slot.is-filled:not(:disabled):active { transform: scale(0.94); }
+.dr-ship:not(:disabled):active { transform: scale(0.92); }

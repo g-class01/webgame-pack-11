@@ -1,0 +1,5 @@
+import { S as Script } from './index.mjs';
+
+function _define_property(obj,key,value){if(key in obj){Object.defineProperty(obj,key,{value:value,enumerable:true,configurable:true,writable:true});}else {obj[key]=value;}return obj}class LumatopiaGate extends Script{initialize(){this.player=null;this.flow=null;this.armed=false;}postInitialize(){this.player=this.app.root.find(e=>!!e.script?.playerMove)[0]??null;this.flow=this.app.root.find(e=>!!e.script?.gameFlow)[0]?.script.gameFlow??null;}update(){const travel=window.DanceTravel;if(!this.player||!travel||travel.busy)return;const p=this.player.getPosition();const c=this.entity.getPosition();const dx=p.x-c.x,dz=p.z-c.z;const inside=dx*dx+dz*dz<this.radius*this.radius&&Math.abs(p.y-c.y)<3;if(!inside){this.armed=true;return}if(!this.armed||this.flow&&this.flow.state!=="hub")return;this.armed=false;travel.toLumatopia(this.app);}constructor(...args){super(...args),_define_property(this,"radius",1.1);}}_define_property(LumatopiaGate,"scriptName","lumatopiaGate");
+
+export { LumatopiaGate };

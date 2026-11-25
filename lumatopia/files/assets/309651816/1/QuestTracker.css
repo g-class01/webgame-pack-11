@@ -1,0 +1,272 @@
+/* Quest tracker (QuestSystem.js + QuestTrackerView.js).
+   No panel: outlined text over the world, as the user asked. A small quest
+   button (it folds everything else away), a bar for the whole quest line, the
+   current quest's title with the marker's pink ring, its objective with a
+   count, and a quieter line for the quest after it.
+   Sized in HUD units (--hud, one unit of the PlayCanvas GameUI screen). It
+   sits at the left edge of the screen just under the HUD's left buttons:
+   QuestSystem places it there from HudLayout; left/top below are the
+   fallback when that is not known yet.
+   Only the button and the second line take taps; the text lets the game
+   through. Font sizes carry a pixel floor so phones never get text smaller. */
+
+.qt-root {
+    --qt-text: #ffffff;
+    --qt-goal: #ffe0f0;
+    --qt-ink: #4a2a5e;
+    position: absolute;
+    left: max(12px, calc(var(--hud, 1px) * 10));
+    top: calc(var(--hud, 1px) * 125);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: calc(var(--hud, 1px) * 6);
+    max-width: calc(100vw - var(--hud, 1px) * 140);
+    pointer-events: none;
+}
+
+.qt-root.is-in {
+    animation: qt-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes qt-in {
+    from { opacity: 0; transform: translateX(calc(var(--hud, 1px) * -18)); }
+}
+
+/* ---- The quest button (fold / unfold) --------------------------------- */
+
+.qt-button {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: calc(var(--hud, 1px) * 44);
+    height: calc(var(--hud, 1px) * 44);
+    border-radius: calc(var(--hud, 1px) * 13);
+    background: linear-gradient(#ffffff, #fff1f8);
+    box-shadow:
+        0 calc(var(--hud, 1px) * 3) 0 #f2b8d6,
+        0 calc(var(--hud, 1px) * 5) calc(var(--hud, 1px) * 10) rgba(60, 25, 70, 0.35);
+    pointer-events: auto;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Three list lines with dots, drawn in CSS. */
+.qt-lines {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--hud, 1px) * 4);
+}
+
+.qt-lines b {
+    position: relative;
+    display: block;
+    width: calc(var(--hud, 1px) * 16);
+    height: calc(var(--hud, 1px) * 4);
+    margin-left: calc(var(--hud, 1px) * 6);
+    border-radius: calc(var(--hud, 1px) * 2);
+    background: #f07fb4;
+}
+
+.qt-lines b::before {
+    content: '';
+    position: absolute;
+    left: calc(var(--hud, 1px) * -7);
+    top: 0;
+    width: calc(var(--hud, 1px) * 4);
+    height: calc(var(--hud, 1px) * 4);
+    border-radius: 50%;
+    background: #f07fb4;
+}
+
+.qt-badge {
+    position: absolute;
+    top: calc(var(--hud, 1px) * -7);
+    right: calc(var(--hud, 1px) * -7);
+    min-width: calc(var(--hud, 1px) * 20);
+    height: calc(var(--hud, 1px) * 20);
+    padding: 0 calc(var(--hud, 1px) * 5);
+    border-radius: calc(var(--hud, 1px) * 10);
+    background: #ff6fae;
+    box-shadow: 0 0 0 calc(var(--hud, 1px) * 2) #ffffff;
+    color: #ffffff;
+    font-size: max(10px, calc(var(--hud, 1px) * 13));
+    line-height: calc(var(--hud, 1px) * 20);
+    text-align: center;
+}
+
+@media (hover: hover) {
+    .qt-button:hover { transform: scale(1.08); }
+}
+
+.qt-button:active {
+    transition-duration: 0.1s;
+    transform: scale(0.9);
+}
+
+.qt-root.is-folded .qt-body {
+    display: none;
+}
+
+/* ---- Bar for the whole quest line -------------------------------------- */
+
+.qt-body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: calc(var(--hud, 1px) * 4);
+}
+
+.qt-chain {
+    position: relative;
+    width: calc(var(--hud, 1px) * 250);
+    height: calc(var(--hud, 1px) * 7);
+    margin: calc(var(--hud, 1px) * 2) 0 calc(var(--hud, 1px) * 4);
+    border-radius: calc(var(--hud, 1px) * 4);
+    background: rgba(50, 25, 60, 0.45);
+    box-shadow: 0 calc(var(--hud, 1px) * 1) calc(var(--hud, 1px) * 3) rgba(50, 25, 60, 0.3);
+    overflow: hidden;
+}
+
+.qt-chain-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #ffffff, #ffd0e6);
+    transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ---- Current quest ------------------------------------------------------- */
+
+.qt-main,
+.qt-goal,
+.qt-done {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--hud, 1px) * 8);
+}
+
+.qt-main.is-in,
+.qt-goal.is-in,
+.qt-done.is-in {
+    animation: qt-line-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.qt-goal.is-in {
+    animation-delay: 0.06s;
+}
+
+@keyframes qt-line-in {
+    from { opacity: 0; transform: translateX(calc(var(--hud, 1px) * -12)); }
+}
+
+.qt-ring {
+    flex: none;
+    width: calc(var(--hud, 1px) * 28);
+    height: calc(var(--hud, 1px) * 28);
+    background-size: contain;
+}
+
+.qt-name {
+    --outline: var(--qt-ink);
+    --outline-width: max(1.5px, calc(var(--hud, 1px) * 2.6));
+    color: var(--qt-text);
+    font-size: max(15px, calc(var(--hud, 1px) * 27));
+    line-height: 1.1;
+    white-space: nowrap;
+    filter: drop-shadow(0 calc(var(--hud, 1px) * 2) calc(var(--hud, 1px) * 3) rgba(40, 15, 50, 0.45));
+}
+
+.qt-main.is-next {
+    opacity: 0.7;
+}
+
+/* A small pink half-moon, like the reference's yellow one. */
+.qt-moon {
+    flex: none;
+    width: calc(var(--hud, 1px) * 13);
+    height: calc(var(--hud, 1px) * 13);
+    margin: 0 calc(var(--hud, 1px) * 7) 0 calc(var(--hud, 1px) * 8);
+    border-radius: 50%;
+    background: linear-gradient(90deg, #ff8fc4 50%, rgba(255, 255, 255, 0.9) 50%);
+    box-shadow: 0 0 0 calc(var(--hud, 1px) * 2) var(--qt-ink);
+}
+
+.qt-goal-text {
+    --outline: var(--qt-ink);
+    --outline-width: max(1.5px, calc(var(--hud, 1px) * 2.2));
+    color: var(--qt-goal);
+    font-size: max(13px, calc(var(--hud, 1px) * 21));
+    line-height: 1.15;
+    filter: drop-shadow(0 calc(var(--hud, 1px) * 2) calc(var(--hud, 1px) * 3) rgba(40, 15, 50, 0.4));
+}
+
+/* ---- Quest complete -------------------------------------------------------- */
+
+.qt-check {
+    position: relative;
+    flex: none;
+    width: calc(var(--hud, 1px) * 22);
+    height: calc(var(--hud, 1px) * 22);
+    margin-left: calc(var(--hud, 1px) * 3);
+    border-radius: 50%;
+    background: #5fd393;
+    box-shadow: 0 0 0 calc(var(--hud, 1px) * 2) var(--qt-ink);
+}
+
+.qt-check::after {
+    content: '';
+    position: absolute;
+    left: 36%;
+    top: 18%;
+    width: 22%;
+    height: 44%;
+    border: solid #ffffff;
+    border-width: 0 max(2px, calc(var(--hud, 1px) * 2.6)) max(2px, calc(var(--hud, 1px) * 2.6)) 0;
+    transform: rotate(45deg);
+}
+
+.qt-done-text {
+    --outline: #1f6b40;
+    --outline-width: max(1.5px, calc(var(--hud, 1px) * 2.2));
+    color: #c9ffdc;
+    font-size: max(13px, calc(var(--hud, 1px) * 20));
+    white-space: nowrap;
+}
+
+/* ---- The quest after this one --------------------------------------------- */
+
+.qt-second {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--hud, 1px) * 6);
+    margin-top: calc(var(--hud, 1px) * 4);
+    padding-left: calc(var(--hud, 1px) * 6);
+    opacity: 0.78;
+    pointer-events: auto;
+    text-align: left;
+}
+
+.qt-second:disabled {
+    pointer-events: none;
+}
+
+.qt-second-label {
+    flex: none;
+    padding: 0 calc(var(--hud, 1px) * 8);
+    border-radius: calc(var(--hud, 1px) * 10);
+    background: rgba(50, 25, 60, 0.45);
+    color: #ffffff;
+    font-size: max(10px, calc(var(--hud, 1px) * 14));
+    line-height: 1.5;
+}
+
+.qt-second-name {
+    --outline: var(--qt-ink);
+    --outline-width: max(1px, calc(var(--hud, 1px) * 2));
+    color: #ffffff;
+    font-size: max(12px, calc(var(--hud, 1px) * 18));
+    white-space: nowrap;
+}

@@ -1,0 +1,121 @@
+/* The minigame queue's pill (Minigames.js): top middle, while she waits on the
+   island for a Music Beach show she queued for on the phone. What it waits for
+   (and the song), the wait and how many are in, Play solo (the dance show,
+   once the queue says it can) and cancel. Sized in HUD units (--hud). */
+
+.mg-pill {
+    position: absolute;
+    left: 50%;
+    top: calc(var(--hud, 1px) * 18);
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: calc(var(--hud, 1px) * 12);
+    max-width: calc(100% - 24px);
+    padding: calc(var(--hud, 1px) * 8) calc(var(--hud, 1px) * 8) calc(var(--hud, 1px) * 8) calc(var(--hud, 1px) * 18);
+    border-radius: 99px;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 0 0 calc(var(--hud, 1px) * 3) #ffd0e6, 0 calc(var(--hud, 1px) * 5) 0 rgba(61, 33, 80, 0.14);
+    color: #3d2150;
+    white-space: nowrap;
+    pointer-events: auto;
+    animation: mg-pill-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes mg-pill-in {
+    from { transform: translate(-50%, -40%) scale(0.85); opacity: 0; }
+}
+
+.mg-pill-dot {
+    flex: none;
+    width: max(8px, calc(var(--hud, 1px) * 12));
+    height: max(8px, calc(var(--hud, 1px) * 12));
+    border-radius: 50%;
+    background: #ff8fc4;
+    animation: mg-pill-pulse 1.2s ease-in-out infinite;
+}
+
+.mg-pill.is-found .mg-pill-dot {
+    background: #5fcf8a;
+    animation: none;
+}
+
+.mg-pill.is-note .mg-pill-dot {
+    background: #c8b6dc;
+    animation: none;
+}
+
+@keyframes mg-pill-pulse {
+    50% { transform: scale(0.6); opacity: 0.5; }
+}
+
+.mg-pill-text {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.mg-pill-label {
+    font-weight: normal;
+    font-size: max(13px, calc(var(--hud, 1px) * 22));
+}
+
+.mg-pill-sub {
+    max-width: max(140px, calc(var(--hud, 1px) * 260));
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: max(10px, calc(var(--hud, 1px) * 15));
+    color: #8a6aa8;
+}
+
+.mg-pill-nums {
+    flex: none;
+    display: flex;
+    gap: calc(var(--hud, 1px) * 10);
+    font-size: max(12px, calc(var(--hud, 1px) * 19));
+    color: #8a6aa8;
+    font-variant-numeric: tabular-nums;
+}
+
+.mg-pill-solo {
+    flex: none;
+    padding: calc(var(--hud, 1px) * 7) calc(var(--hud, 1px) * 16);
+    border: 0;
+    border-radius: 99px;
+    background: #ff8fc4;
+    box-shadow: 0 calc(var(--hud, 1px) * 3) 0 #e2679f;
+    color: #ffffff;
+    font: inherit;
+    font-size: max(12px, calc(var(--hud, 1px) * 18));
+    cursor: pointer;
+}
+
+.mg-pill-cancel {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: max(26px, calc(var(--hud, 1px) * 40));
+    height: max(26px, calc(var(--hud, 1px) * 40));
+    border: 0;
+    border-radius: 50%;
+    background: #f3e8ff;
+    color: #8a6aa8;
+    cursor: pointer;
+}
+
+.mg-pill-cancel svg {
+    width: 55%;
+    height: 55%;
+}
+
+.mg-pill-solo:active,
+.mg-pill-cancel:active {
+    transform: translateY(calc(var(--hud, 1px) * 2));
+}
+
+/* With no Play solo and no cancel (a note, or "Show found!") the right end evens out. */
+.mg-pill.is-note,
+.mg-pill.is-found {
+    padding-right: calc(var(--hud, 1px) * 20);
+}

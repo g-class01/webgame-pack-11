@@ -1,0 +1,436 @@
+/* NPC shop (NpcShop.js + NpcShopView.js): Maple buys critters, Finn fish,
+   Piper bird photos, and each has a Collection tab for their costume. The
+   frame, cards and buttons are the backpack's (InventoryPanel.css, --iv
+   units); this file sizes the window and adds the tabs, the reward card and
+   the price chips. */
+
+.ns-window {
+    position: relative;
+    width: calc(var(--iv) * 900);
+    height: calc(var(--iv) * 740);
+    margin-top: calc(var(--iv) * 50);
+}
+
+.lui-portrait .ns-window {
+    width: calc(var(--iv) * 860);
+    height: calc(var(--iv) * 1200);
+}
+
+.ns-intro {
+    flex: none;
+    color: var(--iv-ink);
+    font-size: max(14px, calc(var(--iv) * 34));
+    text-align: center;
+}
+
+.ns-main {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.ns-grid {
+    row-gap: calc(var(--iv) * 30);
+    padding-bottom: calc(var(--iv) * 26);
+}
+
+.lui-portrait .ns-grid {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+/* What one stack fetches, hanging off the bottom of its card. */
+.ns-price {
+    position: absolute;
+    left: 50%;
+    bottom: calc(var(--iv) * -16);
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: calc(var(--iv) * 4);
+    padding: 0 calc(var(--iv) * 12) 0 calc(var(--iv) * 6);
+    border-radius: calc(var(--iv) * 18);
+    background: #fff4c7;
+    box-shadow: inset 0 0 0 calc(var(--iv) * 3) #ffd36b;
+    white-space: nowrap;
+}
+
+.ns-price-icon {
+    flex: none;
+    width: calc(var(--iv) * 30);
+    height: calc(var(--iv) * 30);
+}
+
+.ns-price-text {
+    color: #9a5a00;
+    font-size: max(11px, calc(var(--iv) * 24));
+    font-variant-numeric: tabular-nums;
+}
+
+/* The count moves up out of the price chip's way. */
+.ns-item .iv-item-count {
+    top: calc(var(--iv) * 8);
+    bottom: auto;
+}
+
+.ns-footer {
+    flex: none;
+    min-height: calc(var(--iv) * 110);
+    display: flex;
+    align-items: center;
+    gap: calc(var(--iv) * 20);
+    padding: calc(var(--iv) * 10) calc(var(--iv) * 20);
+    border-radius: calc(var(--iv) * 32);
+    background: #f6effe;
+    box-shadow: inset 0 0 0 calc(var(--iv) * 3) #eadcfb;
+}
+
+.ns-hint {
+    flex: 1;
+    color: var(--iv-ink-soft);
+    font-size: max(12px, calc(var(--iv) * 26));
+}
+
+.ns-sell-all {
+    flex: none;
+    gap: calc(var(--iv) * 8);
+    min-width: calc(var(--iv) * 260);
+}
+
+/* ---- Collection | Sell ------------------------------------------------ */
+
+.ns-tabs {
+    flex: none;
+    display: flex;
+    justify-content: center;
+    gap: calc(var(--iv) * 16);
+}
+
+.ns-tab {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--iv) * 10);
+    min-width: calc(var(--iv) * 240);
+    height: calc(var(--iv) * 70);
+    padding: 0 calc(var(--iv) * 28) 0 calc(var(--iv) * 14);
+    border-radius: calc(var(--iv) * 35);
+    background: #efe3ff;
+    box-shadow: inset 0 calc(var(--iv) * -5) 0 rgba(0, 0, 0, 0.05), 0 calc(var(--iv) * 5) 0 #d8c3f5;
+    color: var(--iv-ink);
+    font-size: max(13px, calc(var(--iv) * 30));
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ns-tab.is-active {
+    background: #ff9fcf;
+    box-shadow:
+        inset 0 0 0 calc(var(--iv) * 4) rgba(255, 255, 255, 0.85),
+        inset 0 calc(var(--iv) * -6) 0 rgba(0, 0, 0, 0.08),
+        0 calc(var(--iv) * 5) 0 #e0679f;
+    color: #ffffff;
+    text-shadow: 0 calc(var(--iv) * 2) 0 rgba(176, 50, 110, 0.5);
+}
+
+.ns-tab-icon {
+    flex: none;
+    width: calc(var(--iv) * 46);
+    height: calc(var(--iv) * 46);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.ns-tab:active {
+    transform: scale(0.95);
+    transition-duration: 0.1s;
+}
+
+.ns-page {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--iv) * 14);
+}
+
+/* ---- Collection: the costume and the catches it takes ------------------ */
+
+.ns-reward {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--iv) * 22);
+    padding: calc(var(--iv) * 14) calc(var(--iv) * 22) calc(var(--iv) * 20);
+    border-radius: calc(var(--iv) * 32);
+    background: linear-gradient(100deg, #fff1fa, #f3ecff);
+    box-shadow: inset 0 0 0 calc(var(--iv) * 3) #f6d2ec;
+}
+
+.ns-reward-art {
+    position: relative;
+    flex: none;
+    width: calc(var(--iv) * 150);
+    height: calc(var(--iv) * 150);
+    border-radius: calc(var(--iv) * 28);
+    background: radial-gradient(circle at 50% 40%, #ffffff 0, #ffe7f4 75%);
+    box-shadow: inset 0 0 0 calc(var(--iv) * 3) #ffd0e8, 0 calc(var(--iv) * 5) 0 #f3c3df;
+}
+
+.ns-reward-picture {
+    position: absolute;
+    inset: 5%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.ns-reward-tag {
+    position: absolute;
+    left: 50%;
+    bottom: calc(var(--iv) * -14);
+    transform: translateX(-50%);
+    padding: 0 calc(var(--iv) * 14);
+    border-radius: calc(var(--iv) * 16);
+    background: #ff8cc6;
+    box-shadow: 0 calc(var(--iv) * 3) 0 #e0679f;
+    color: #ffffff;
+    font-size: max(11px, calc(var(--iv) * 22));
+    white-space: nowrap;
+}
+
+.ns-reward.is-complete .ns-reward-tag {
+    background: #59d39a;
+    box-shadow: 0 calc(var(--iv) * 3) 0 #2fae78;
+}
+
+.ns-reward-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--iv) * 8);
+}
+
+.ns-reward-name {
+    --outline: #c4467f;
+    color: #ffffff;
+    font-size: max(16px, calc(var(--iv) * 40));
+    line-height: 1.05;
+}
+
+.ns-reward-line {
+    color: var(--iv-ink);
+    font-size: max(12px, calc(var(--iv) * 26));
+    line-height: 1.2;
+}
+
+/* The bar and the shoes' badge standing on it at the halfway mark. */
+.ns-progress-wrap {
+    position: relative;
+    margin: calc(var(--iv) * 8) 0;
+}
+
+.ns-progress {
+    position: relative;
+    height: calc(var(--iv) * 40);
+    border-radius: calc(var(--iv) * 20);
+    background: #ffffff;
+    box-shadow: inset 0 0 0 calc(var(--iv) * 3) #f0d9f3;
+    overflow: hidden;
+}
+
+.ns-progress-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    border-radius: calc(var(--iv) * 20);
+    background: linear-gradient(#ffb3da, #ff7eb8);
+    transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ns-reward.is-complete .ns-progress-fill {
+    background: linear-gradient(#8ff0c4, #4fd69c);
+}
+
+.ns-progress-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    --outline: #c4467f;
+    color: #ffffff;
+    font-size: max(12px, calc(var(--iv) * 26));
+}
+
+/* The badge sits mid-bar, so the count moves to the start. */
+.ns-progress-label.has-milestone {
+    justify-content: flex-start;
+    padding-left: calc(var(--iv) * 16);
+}
+
+.ns-progress-tick {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: calc(var(--iv) * 3);
+    margin-left: calc(var(--iv) * -1.5);
+    background: #f0d9f3;
+}
+
+.ns-milestone {
+    position: absolute;
+    top: 50%;
+    width: calc(var(--iv) * 66);
+    height: calc(var(--iv) * 66);
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle at 50% 40%, #ffffff 0, #ffe7f4 80%);
+    box-shadow: inset 0 0 0 calc(var(--iv) * 4) #ffb3da, 0 calc(var(--iv) * 4) 0 #f3c3df;
+    cursor: default;
+}
+
+.ns-milestone.is-unlocked {
+    background: radial-gradient(circle at 50% 40%, #ffffff 0, #e6fff2 80%);
+    box-shadow: inset 0 0 0 calc(var(--iv) * 4) #59d39a, 0 calc(var(--iv) * 4) 0 #2fae78;
+}
+
+.ns-milestone:not(:disabled) {
+    cursor: pointer;
+}
+
+.ns-milestone-icon {
+    position: absolute;
+    inset: 12%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.ns-milestone-tag {
+    position: absolute;
+    left: 50%;
+    bottom: calc(var(--iv) * -12);
+    transform: translateX(-50%);
+    min-width: calc(var(--iv) * 28);
+    padding: 0 calc(var(--iv) * 8);
+    border-radius: calc(var(--iv) * 14);
+    background: #ff8cc6;
+    box-shadow: 0 calc(var(--iv) * 2) 0 #e0679f;
+    --outline: #c4467f;
+    color: #ffffff;
+    font-size: max(10px, calc(var(--iv) * 20));
+    line-height: 1.3;
+    text-align: center;
+}
+
+.ns-milestone-check {
+    position: absolute;
+    right: calc(var(--iv) * -8);
+    top: calc(var(--iv) * -8);
+    width: calc(var(--iv) * 30);
+    height: calc(var(--iv) * 30);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.ns-milestone.is-celebrating {
+    animation: ns-milestone-pop 0.75s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes ns-milestone-pop {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    35% { transform: translate(-50%, -50%) scale(1.35) rotate(-8deg); }
+    70% { transform: translate(-50%, -50%) scale(0.95) rotate(3deg); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+.ns-reward.is-complete .ns-progress-label {
+    --outline: #23915f;
+}
+
+.ns-wear {
+    flex: none;
+}
+
+/* The last catch handed in: the costume jumps. */
+.ns-reward.is-celebrating .ns-reward-art {
+    animation: ns-pop 0.75s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes ns-pop {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.22) rotate(-5deg); }
+    70% { transform: scale(0.96) rotate(2deg); }
+    100% { transform: scale(1); }
+}
+
+/* A catch the player is carrying and can hand in now. */
+.ns-need.is-ready {
+    box-shadow:
+        inset 0 0 0 calc(var(--iv) * 4) #ff9fcf,
+        0 calc(var(--iv) * 5) 0 #f3b6d6,
+        0 calc(var(--iv) * 8) calc(var(--iv) * 14) rgba(240, 110, 170, 0.25);
+}
+
+.ns-need.is-done {
+    background: #f0fff6;
+    box-shadow: inset 0 0 0 calc(var(--iv) * 4) #9ee8c2, 0 calc(var(--iv) * 5) 0 #bfeed5;
+}
+
+.ns-need:disabled {
+    cursor: default;
+}
+
+.ns-need-check {
+    display: none;
+    position: absolute;
+    right: calc(var(--iv) * -8);
+    top: calc(var(--iv) * -8);
+    width: calc(var(--iv) * 44);
+    height: calc(var(--iv) * 44);
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.ns-need.is-done .ns-need-check {
+    display: block;
+}
+
+.ns-need.is-done .ns-price {
+    background: #e3fbef;
+    box-shadow: inset 0 0 0 calc(var(--iv) * 3) #7fdcae;
+}
+
+.ns-need.is-done .ns-price-text {
+    color: #1f8a5a;
+}
+
+.ns-give-all {
+    flex: none;
+    min-width: calc(var(--iv) * 220);
+}
+
+/* Quest guide (Photo for Piper): the tutorial hand taps the card or tab to
+   press. NpcShopView moves it onto the target every frame. */
+.ns-hand {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: max(64px, calc(var(--iv) * 130));
+    height: max(64px, calc(var(--iv) * 130));
+    pointer-events: none;
+    z-index: 5;
+    animation: ns-hand-tap 1s ease-in-out infinite;
+}
+
+@keyframes ns-hand-tap {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(calc(var(--iv) * -9), calc(var(--iv) * -14)); }
+}

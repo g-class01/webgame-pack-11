@@ -1,0 +1,187 @@
+/* Wall shelf (HomeShelves.js + ShelfView.js): the shelf's spots on a wooden
+   plank, and the player's hand props below to put on them. The frame, cards
+   and empty text are the backpack's (InventoryPanel.css, --iv units); this
+   file sizes the window and draws the shelf. */
+
+.sh-window {
+    position: relative;
+    width: calc(var(--iv) * 900);
+    height: calc(var(--iv) * 760);
+    margin-top: calc(var(--iv) * 50);
+}
+
+.lui-portrait .sh-window {
+    width: calc(var(--iv) * 860);
+    height: calc(var(--iv) * 1200);
+}
+
+/* ---- The shelf -------------------------------------------------------- */
+
+.sh-shelf {
+    flex: none;
+    position: relative;
+    padding: calc(var(--iv) * 6) calc(var(--iv) * 60) 0;
+}
+
+.sh-spots {
+    position: relative;
+    display: flex;
+    justify-content: space-around;
+    gap: calc(var(--iv) * 24);
+    padding: 0 calc(var(--iv) * 20);
+    z-index: 1;
+}
+
+.sh-spot {
+    position: relative;
+    flex: none;
+    width: calc(var(--iv) * 170);
+    height: calc(var(--iv) * 170);
+    margin-bottom: calc(var(--iv) * -14);
+    border-radius: calc(var(--iv) * 34);
+    background: rgba(255, 255, 255, 0.55);
+    box-shadow: inset 0 0 0 calc(var(--iv) * 4) rgba(201, 166, 255, 0.55);
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s, background 0.2s;
+}
+
+.sh-spot.is-filled {
+    background: transparent;
+    box-shadow: none;
+}
+
+/* The spot the next tap fills. */
+.sh-spot.is-selected {
+    background: rgba(255, 228, 242, 0.85);
+    box-shadow:
+        inset 0 0 0 calc(var(--iv) * 5) #ff8fc4,
+        0 0 calc(var(--iv) * 22) rgba(255, 143, 196, 0.5);
+}
+
+.sh-spot:active {
+    transform: scale(0.94);
+}
+
+.sh-spot-icon {
+    position: absolute;
+    inset: 6%;
+    background-repeat: no-repeat;
+}
+
+.sh-spot-icon.is-landing {
+    animation: sh-land 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes sh-land {
+    0% { transform: translateY(-28%) scale(0.6); opacity: 0; }
+    100% { transform: none; opacity: 1; }
+}
+
+.sh-spot-plus {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #c9a6ff;
+    font-size: max(22px, calc(var(--iv) * 84));
+    line-height: 1;
+    pointer-events: none;
+}
+
+.sh-spot.is-selected .sh-spot-plus {
+    color: #ff8fc4;
+}
+
+.sh-spot-clear {
+    position: absolute;
+    top: calc(var(--iv) * -12);
+    right: calc(var(--iv) * -12);
+    width: max(26px, calc(var(--iv) * 58));
+    height: max(26px, calc(var(--iv) * 58));
+    border-radius: 50%;
+    background: #ff8fc4;
+    box-shadow: inset 0 0 0 calc(var(--iv) * 4) #ffffff, 0 calc(var(--iv) * 4) 0 #e0679f;
+    z-index: 2;
+}
+
+.sh-spot-clear::before,
+.sh-spot-clear::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 52%;
+    height: 14%;
+    border-radius: calc(var(--iv) * 4);
+    background: #ffffff;
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.sh-spot-clear::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+/* A plank with a pink stripe, like the shelf in the game. */
+.sh-plank {
+    position: relative;
+    height: calc(var(--iv) * 44);
+    border-radius: calc(var(--iv) * 16);
+    background: linear-gradient(#f2b36a, #d98c42);
+    box-shadow:
+        inset 0 calc(var(--iv) * 6) 0 rgba(255, 255, 255, 0.35),
+        inset 0 calc(var(--iv) * -8) 0 rgba(140, 70, 20, 0.25),
+        0 calc(var(--iv) * 8) 0 #b86e2e;
+}
+
+.sh-plank::after {
+    content: '';
+    position: absolute;
+    left: calc(var(--iv) * 14);
+    right: calc(var(--iv) * 14);
+    bottom: calc(var(--iv) * 10);
+    height: calc(var(--iv) * 8);
+    border-radius: calc(var(--iv) * 4);
+    background: #ff9fc0;
+}
+
+.sh-hint {
+    flex: none;
+    margin-top: calc(var(--iv) * 14);
+    color: var(--iv-ink-soft);
+    font-size: max(12px, calc(var(--iv) * 28));
+    text-align: center;
+}
+
+/* ---- The props -------------------------------------------------------- */
+
+.sh-main {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.sh-grid {
+    grid-template-columns: repeat(6, 1fr);
+}
+
+.lui-portrait .sh-grid {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+/* Showing on one of the player's shelves: a small check in the corner. */
+.sh-item-badge {
+    position: absolute;
+    right: calc(var(--iv) * -6);
+    top: calc(var(--iv) * -6);
+    width: calc(var(--iv) * 40);
+    height: calc(var(--iv) * 40);
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.sh-item.is-shown {
+    background: #fff6fb;
+}

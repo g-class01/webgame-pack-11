@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+<script>
+(function() {
+  if (typeof AudioContext !== 'undefined' && AudioContext.prototype.decodeAudioData) {
+    var orig = AudioContext.prototype.decodeAudioData;
+    AudioContext.prototype.decodeAudioData = function(buf, success, error) {
+      try {
+        var res = orig.apply(this, arguments);
+        if (res && typeof res.catch === 'function') {
+          return res.catch(function(e) {
+            if (typeof error === 'function') { try { error(e); } catch(err) {} }
+            return null;
+          });
+        }
+        return res;
+      } catch(e) {
+        if (typeof error === 'function') { try { error(e); } catch(err) {} }
+        return Promise.resolve(null);
+      }
+    };
+  }
+  window.addEventListener('unhandledrejection', function(e) {
+    if (e && e.reason && ('' + e.reason).includes('decodeAudioData')) {
+      e.preventDefault();
+    }
+  });
+})();
+</script>
+<script>
+(function() {
+    function dummyBreak(fn) {
+        if (typeof fn === 'function') fn();
+        return Promise.resolve(true);
+    }
+    window.commercialBreak = window.commercialBreak || dummyBreak;
+    window.rewardedBreak = window.rewardedBreak || dummyBreak;
+    try {
+        if (window.parent && window.parent !== window) {
+            window.parent.commercialBreak = window.parent.commercialBreak || dummyBreak;
+            window.parent.rewardedBreak = window.parent.rewardedBreak || dummyBreak;
+        }
+        if (window.top && window.top !== window) {
+            window.top.commercialBreak = window.top.commercialBreak || dummyBreak;
+            window.top.rewardedBreak = window.top.rewardedBreak || dummyBreak;
+        }
+    } catch(e) {}
+})();
+</script>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Ragdoll Shooter</title>
+  <script src="poki-sdk.js"></script>
+  <script>window.open = function () {}; window.NOSW = true;</script>
+  <style>
+    html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; background: #000; }
+    #unity-container { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+    #unity-canvas { width: 100%; height: 100%; background: #000; display: block; }
+  </style>
+</head>
+<body>
+  <div id="unity-container">
+    <canvas id="unity-canvas" tabindex="-1"></canvas>
+  </div>
+  <script src="Build/8e6d0e28deb4a0ba34b80f2c9366be26.loader.js"></script>
+  <script>
+    var canvas = document.querySelector("#unity-canvas");
+    createUnityInstance(canvas, {
+      dataUrl: "Build/5689755ce1081a8a2d33866dd2527e32.data",
+      frameworkUrl: "Build/68207705b603711b59e3380f9267cf67.framework.js",
+      codeUrl: "Build/16d9bf04ea97fdbea1c4512648eb2447.wasm",
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: "Viseron",
+      productName: "Ragdoll Shooter",
+      productVersion: "0.6.4"
+    }).then(function (instance) {
+      window.unityInstance = instance;
+      console.log("Unity instance created successfully!");
+    }).catch(function (message) {
+      console.error("Unity error:", message);
+    });
+  </script>
+</body>
+</html>

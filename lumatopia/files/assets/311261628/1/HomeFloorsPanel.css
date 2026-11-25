@@ -1,0 +1,224 @@
+/* Floor panel (HomeFloors.js + HomeFloorsView.js): opened from the floor circle
+   by your home. The frame, title bar and close button are the backpack's
+   (InventoryPanel.css, --iv units); this file sizes the window and draws the
+   little house -- the floors you have in the house's lavender, the next one
+   glowing with a "+", the ones still to come as faint outlines -- then the
+   floor's name, a line under it, the price with the coin and Build. */
+
+.hf-window {
+    position: relative;
+    width: calc(var(--iv) * 700);
+    height: calc(var(--iv) * 760);
+    margin-top: calc(var(--iv) * 50);
+}
+
+.lui-portrait .hf-window {
+    width: calc(var(--iv) * 820);
+    height: calc(var(--iv) * 820);
+}
+
+.hf-panel {
+    align-items: center;
+    gap: calc(var(--iv) * 10);
+    padding-top: calc(var(--iv) * 80);
+}
+
+/* ---- The house ------------------------------------------------------------- */
+
+.hf-picture {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    width: 100%;
+}
+
+.hf-roof {
+    flex: none;
+    width: calc(var(--iv) * 250);
+    height: calc(var(--iv) * 40);
+    margin-bottom: calc(var(--iv) * -4);
+    background: linear-gradient(#b8475e, #93324a);
+    clip-path: polygon(8% 100%, 22% 0, 78% 0, 92% 100%);
+    position: relative;
+    z-index: 1;
+}
+
+.hf-stack {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--iv) * 4);
+    align-items: center;
+}
+
+.hf-floor {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: calc(var(--iv) * 210);
+    height: calc(var(--iv) * 54);
+    padding: 0 calc(var(--iv) * 28);
+    border-radius: calc(var(--iv) * 12);
+}
+
+.hf-floor[data-kind="built"] {
+    background: linear-gradient(#c7b5ef, #a991de);
+    box-shadow: inset 0 calc(var(--iv) * -6) 0 rgba(90, 50, 140, 0.18), 0 calc(var(--iv) * 4) 0 #8f74c8;
+}
+
+.hf-floor[data-kind="next"] {
+    background: rgba(255, 236, 160, 0.55);
+    border: calc(var(--iv) * 4) dashed #ffb72e;
+    box-shadow: 0 0 calc(var(--iv) * 22) rgba(255, 204, 77, 0.85);
+    animation: hf-next-glow 1.4s ease-in-out infinite;
+}
+
+.hf-floor[data-kind="later"] {
+    border: calc(var(--iv) * 3) dashed #d6c8ec;
+    background: rgba(255, 255, 255, 0.35);
+}
+
+@keyframes hf-next-glow {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 calc(var(--iv) * 14) rgba(255, 204, 77, 0.6); }
+    50% { transform: scale(1.04); box-shadow: 0 0 calc(var(--iv) * 30) rgba(255, 204, 77, 1); }
+}
+
+.hf-window-left,
+.hf-window-right {
+    width: calc(var(--iv) * 28);
+    height: calc(var(--iv) * 28);
+    border-radius: calc(var(--iv) * 6);
+    background: linear-gradient(#e9f7ff, #b9def5);
+    box-shadow: inset 0 0 0 calc(var(--iv) * 4) #fff2dc;
+}
+
+.hf-floor[data-kind="next"] .hf-window-left,
+.hf-floor[data-kind="next"] .hf-window-right,
+.hf-floor[data-kind="later"] .hf-window-left,
+.hf-floor[data-kind="later"] .hf-window-right {
+    opacity: 0;
+}
+
+.hf-plus {
+    --outline: #c66a00;
+    --outline-width: max(1px, calc(var(--iv) * 3));
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -54%);
+    color: #ffffff;
+    font-size: max(22px, calc(var(--iv) * 58));
+    line-height: 1;
+}
+
+.hf-ground {
+    flex: none;
+    width: calc(var(--iv) * 330);
+    height: calc(var(--iv) * 18);
+    margin-top: calc(var(--iv) * 2);
+    border-radius: calc(var(--iv) * 9);
+    background: linear-gradient(#a6e36c, #7cc64a);
+}
+
+/* ---- The words ----------------------------------------------------------- */
+
+.hf-headline {
+    --outline: #6b3fb0;
+    --outline-width: max(1px, calc(var(--iv) * 3));
+    flex: none;
+    margin-top: calc(var(--iv) * 6);
+    color: #ffffff;
+    font-size: max(18px, calc(var(--iv) * 52));
+    line-height: 1.1;
+    text-align: center;
+}
+
+.hf-note {
+    flex: none;
+    max-width: calc(var(--iv) * 560);
+    color: var(--iv-ink);
+    font-size: max(13px, calc(var(--iv) * 28));
+    line-height: 1.2;
+    text-align: center;
+}
+
+.hf-note.is-short {
+    color: #e0457b;
+}
+
+/* ---- Price and button ------------------------------------------------------ */
+
+.hf-price {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--iv) * 10);
+    padding: calc(var(--iv) * 6) calc(var(--iv) * 22) calc(var(--iv) * 6) calc(var(--iv) * 10);
+    border-radius: calc(var(--iv) * 26);
+    background: #ffffff;
+    box-shadow: inset 0 0 0 calc(var(--iv) * 3) #eadcfb, 0 calc(var(--iv) * 4) 0 #efe3fb;
+    color: #5b3f78;
+    font-size: max(16px, calc(var(--iv) * 40));
+}
+
+.hf-price.is-short {
+    color: #e0457b;
+}
+
+.hf-price.is-short-shake {
+    animation: hf-shake 0.45s ease-in-out;
+}
+
+@keyframes hf-shake {
+    20% { transform: translateX(calc(var(--iv) * -12)); }
+    40% { transform: translateX(calc(var(--iv) * 10)); }
+    60% { transform: translateX(calc(var(--iv) * -7)); }
+    80% { transform: translateX(calc(var(--iv) * 4)); }
+}
+
+.hf-price-icon {
+    width: max(20px, calc(var(--iv) * 48));
+    height: max(20px, calc(var(--iv) * 48));
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.hf-actions {
+    flex: none;
+    display: flex;
+    justify-content: center;
+}
+
+.hf-build {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* The button art is 180 x 85; the box keeps that shape. */
+    width: calc(var(--iv) * 300);
+    height: calc(var(--iv) * 141.67);
+    padding: 0 calc(var(--iv) * 22) calc(var(--iv) * 8);
+    background-size: 100% 100%;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.hf-build-text {
+    --outline: #336619;
+    --outline-width: max(1px, calc(var(--iv) * 2.5));
+    color: #ffffff;
+    font-size: max(15px, calc(var(--iv) * 40));
+    line-height: 1.05;
+    text-align: center;
+}
+
+@media (hover: hover) {
+    .hf-close:hover { transform: scale(1.15); }
+    .hf-build:hover { transform: scale(1.08); }
+}
+
+.hf-close:active { transform: scale(0.88); transition-duration: 0.1s; }
+.hf-build:active { transform: scale(0.92); transition-duration: 0.1s; }

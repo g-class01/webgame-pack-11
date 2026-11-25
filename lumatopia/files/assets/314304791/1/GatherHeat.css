@@ -1,0 +1,134 @@
+/* The tool heat pill over the player's head while chopping or mining
+   (Gathering.js, GatherHeatView): the wood or stone icon and a bar that fills
+   yellow to red; red-edged with "too hot" and the time left while the tool
+   cools down; green "Ready!" once it has. Small and click-through. --hud is the
+   game HUD's unit (LumatopiaHtmlUi). */
+
+.gh-pill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--hud, 1px) * 8);
+    padding: calc(var(--hud, 1px) * 6) calc(var(--hud, 1px) * 14) calc(var(--hud, 1px) * 6) calc(var(--hud, 1px) * 6);
+    border-radius: 99px;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 calc(var(--hud, 1px) * 3) 0 rgba(120, 70, 40, 0.18);
+    color: #3d2150;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -100%) scale(0.8);
+    transform-origin: 50% 100%;
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+}
+
+.gh-pill.gh-on {
+    opacity: 1;
+    transform: translate(-50%, -100%) scale(1);
+}
+
+.gh-icon {
+    flex: none;
+    width: calc(var(--hud, 1px) * 34);
+    height: calc(var(--hud, 1px) * 34);
+}
+
+.gh-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(var(--hud, 1px) * 3);
+}
+
+.gh-title,
+.gh-note {
+    display: none;
+    line-height: 1.05;
+}
+
+.gh-bar {
+    display: block;
+    width: calc(var(--hud, 1px) * 110);
+    height: calc(var(--hud, 1px) * 12);
+    border-radius: 99px;
+    background: #f3e6dc;
+    overflow: hidden;
+}
+
+.gh-fill {
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: hsl(var(--gh-hue, 48), 95%, 55%);
+    transition: width 0.25s ease-out;
+}
+
+/* Too hot: cooling down. */
+.gh-hot {
+    padding-right: calc(var(--hud, 1px) * 18);
+    background: #fff3ee;
+    box-shadow:
+        0 0 0 calc(var(--hud, 1px) * 3) #ff7a4d,
+        0 calc(var(--hud, 1px) * 4) 0 calc(var(--hud, 1px) * 2) rgba(170, 50, 20, 0.25);
+}
+
+.gh-hot .gh-title,
+.gh-hot .gh-note,
+.gh-ready .gh-title {
+    display: block;
+}
+
+.gh-hot .gh-title {
+    color: #e2401c;
+    font-size: max(14px, calc(var(--hud, 1px) * 22));
+}
+
+.gh-note {
+    color: #8a5a48;
+    font-size: max(12px, calc(var(--hud, 1px) * 16));
+}
+
+.gh-hot .gh-fill {
+    background: linear-gradient(90deg, #ff4d2e, #ff9a3d);
+    transition: width 0.3s linear;
+}
+
+.gh-hot .gh-icon {
+    animation: gh-throb 0.9s ease-in-out infinite;
+}
+
+/* Cooled down. */
+.gh-ready {
+    box-shadow:
+        0 0 0 calc(var(--hud, 1px) * 3) #6fd893,
+        0 calc(var(--hud, 1px) * 3) 0 calc(var(--hud, 1px) * 2) rgba(40, 140, 80, 0.2);
+}
+
+.gh-ready .gh-title {
+    color: #2fa05a;
+    font-size: max(14px, calc(var(--hud, 1px) * 22));
+}
+
+.gh-ready .gh-bar {
+    display: none;
+}
+
+/* E pressed while it is too hot. */
+.gh-nudge {
+    animation: gh-shake 0.4s ease-out;
+}
+
+@keyframes gh-shake {
+    0%, 100% { margin-left: 0; }
+    20% { margin-left: calc(var(--hud, 1px) * -8); }
+    40% { margin-left: calc(var(--hud, 1px) * 8); }
+    60% { margin-left: calc(var(--hud, 1px) * -5); }
+    80% { margin-left: calc(var(--hud, 1px) * 3); }
+}
+
+@keyframes gh-throb {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.12); }
+}

@@ -1,0 +1,763 @@
+/* First-run character creator (SkinShop.js + CharacterCreatorView.js).
+   Sizes are in creator units: calc(var(--cc) * N). On wide screens the panel
+   stands on the right and the preview character fills the space beside it
+   (data-layout="side"); on narrow ones the panel sits at the bottom and the
+   character above it (data-layout="bottom"). The look follows the wardrobe:
+   pastel panel, white bubble cards, pink selection. Font sizes carry a pixel
+   floor so phones never get text smaller than that. */
+
+.cc-overlay {
+    --cc: min(
+        calc(var(--view-w, 100vw) * 0.42 / 720),
+        calc((var(--view-h, 100vh) - 24px) / 1000)
+    );
+    --cc-ink: #5b3f78;
+    --cc-ink-soft: #a08bb8;
+    --cc-pink: #ff7eb8;
+    position: absolute;
+    inset: 0;
+    pointer-events: auto;
+    touch-action: none;
+}
+
+.cc-overlay[data-layout="bottom"] {
+    --cc: min(
+        calc((var(--view-w, 100vw) - 16px) / 900),
+        calc(var(--view-h, 100vh) * 0.56 / 860)
+    );
+}
+
+/* ---- Preview stage ---------------------------------------------------- */
+
+.cc-stage {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: calc(var(--cc) * 720 + 24px);
+    cursor: grab;
+}
+
+.cc-overlay[data-layout="bottom"] .cc-stage {
+    right: 0;
+    bottom: calc(var(--cc) * 860 + 16px);
+}
+
+.cc-stage-hint {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 18px;
+    text-align: center;
+    color: #fff;
+    font-size: max(12px, calc(var(--cc) * 26));
+    opacity: 0.85;
+    pointer-events: none;
+}
+
+/* ---- Panel ------------------------------------------------------------ */
+
+.cc-panel {
+    position: absolute;
+    right: 12px;
+    top: calc(50% - var(--cc) * 500);
+    width: calc(var(--cc) * 720);
+    height: calc(var(--cc) * 1000);
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--cc) * 16);
+    padding: calc(var(--cc) * 30) calc(var(--cc) * 30) calc(var(--cc) * 28);
+    border-radius: calc(var(--cc) * 48);
+    background:
+        radial-gradient(circle at 15% 6%, rgba(255, 214, 236, 0.75) 0, rgba(255, 214, 236, 0) calc(var(--cc) * 260)),
+        radial-gradient(circle at 90% 96%, rgba(214, 236, 255, 0.75) 0, rgba(214, 236, 255, 0) calc(var(--cc) * 300)),
+        linear-gradient(#fffaf6, #fff3f9);
+    border: calc(var(--cc) * 9) solid #ffd6ea;
+    box-shadow:
+        0 0 0 calc(var(--cc) * 3) #f590c0,
+        inset 0 0 0 calc(var(--cc) * 3) #ffb8da,
+        0 calc(var(--cc) * 12) calc(var(--cc) * 34) rgba(90, 40, 120, 0.3);
+}
+
+.cc-overlay[data-layout="bottom"] .cc-panel {
+    right: auto;
+    left: calc(50% - var(--cc) * 450);
+    top: auto;
+    bottom: 8px;
+    width: calc(var(--cc) * 900);
+    height: calc(var(--cc) * 860);
+    padding: calc(var(--cc) * 24) calc(var(--cc) * 26) calc(var(--cc) * 22);
+}
+
+.cc-overlay .lui-outline {
+    --outline-width: max(1.5px, calc(var(--cc) * 4));
+}
+
+.cc-title {
+    flex: none;
+    text-align: center;
+    color: #fff;
+    font-size: max(17px, calc(var(--cc) * 50));
+    line-height: 1.1;
+    --outline: #c45a9a;
+}
+
+/* ---- Steps --------------------------------------------------------------- */
+
+.cc-steps {
+    flex: none;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: calc(var(--cc) * 10);
+}
+
+.cc-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--cc) * 4);
+    height: calc(var(--cc) * 116);
+    border-radius: calc(var(--cc) * 28);
+    background: #efe3ff;
+    box-shadow: inset 0 calc(var(--cc) * -5) 0 rgba(0, 0, 0, 0.05), 0 calc(var(--cc) * 5) 0 #d8c3f5;
+    color: var(--cc-ink-soft);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s;
+}
+
+.cc-step.is-active {
+    background: linear-gradient(#ffb3d6, #ff8cc3);
+    box-shadow: inset 0 calc(var(--cc) * -5) 0 rgba(0, 0, 0, 0.06), 0 calc(var(--cc) * 5) 0 #e86aa6;
+    color: #fff;
+    transform: translateY(calc(var(--cc) * -3));
+}
+
+.cc-step-icon {
+    width: calc(var(--cc) * 50);
+    height: calc(var(--cc) * 50);
+    background: currentColor;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+}
+
+/* Skin: a little disc of tones. Name: "Aa". Neither has a glyph texture. */
+.cc-step-icon-skin {
+    border-radius: 50%;
+    background: conic-gradient(#ffe4d2, #edb98f, #d0976a, #a56c47, #6f462f, #ffe4d2);
+    box-shadow: 0 0 0 calc(var(--cc) * 4) rgba(255, 255, 255, 0.85);
+}
+
+.cc-step-icon-name {
+    background: none;
+    font-size: calc(var(--cc) * 40);
+    line-height: calc(var(--cc) * 50);
+    text-align: center;
+    color: currentColor;
+}
+
+.cc-step-label {
+    font-size: max(10px, calc(var(--cc) * 24));
+    line-height: 1;
+    white-space: nowrap;
+}
+
+/* ---- Section ------------------------------------------------------------ */
+
+.cc-section {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--cc) * 16);
+    padding: calc(var(--cc) * 20);
+    border-radius: calc(var(--cc) * 36);
+    background: rgba(255, 255, 255, 0.6);
+    box-shadow: inset 0 0 0 calc(var(--cc) * 3) #f6dcef;
+}
+
+.cc-caption {
+    flex: none;
+    text-align: center;
+    color: var(--cc-ink);
+    font-size: max(12px, calc(var(--cc) * 30));
+}
+
+/* Skin tones: big round swatches. */
+/* Three a row, the lavender tone centred on its own below the natural ones. */
+.cc-tones {
+    flex: 1 1 auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: center;
+    gap: calc(var(--cc) * 26);
+    max-width: calc(var(--cc) * (150 * 3 + 26 * 2 + 4));
+    margin: 0 auto;
+}
+
+.cc-overlay[data-layout="bottom"] .cc-tones {
+    flex-wrap: nowrap;
+    max-width: none;
+    gap: calc(var(--cc) * 14);
+}
+
+.cc-tone {
+    position: relative;
+    flex: none;
+    width: calc(var(--cc) * 150);
+    height: calc(var(--cc) * 150);
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.45) 0, rgba(255, 255, 255, 0) 45%),
+        var(--cc-tone);
+    box-shadow: 0 0 0 calc(var(--cc) * 8) #fff, 0 calc(var(--cc) * 8) 0 calc(var(--cc) * 6) #ead7f4;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cc-overlay[data-layout="bottom"] .cc-tone {
+    flex: none;
+    width: calc(var(--cc) * 96);
+    height: calc(var(--cc) * 96);
+}
+
+.cc-tone.is-selected {
+    box-shadow: 0 0 0 calc(var(--cc) * 8) var(--cc-pink), 0 calc(var(--cc) * 8) 0 calc(var(--cc) * 6) #e86aa6;
+    transform: scale(1.06);
+}
+
+/* Items: white bubble cards with the wardrobe's icons. */
+.cc-grid {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: min-content;
+    gap: calc(var(--cc) * 16);
+    overflow-y: auto;
+    padding: calc(var(--cc) * 6);
+    scrollbar-width: thin;
+}
+
+.cc-overlay[data-layout="bottom"] .cc-grid {
+    grid-template-columns: repeat(6, 1fr);
+}
+
+.cc-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: calc(var(--cc) * 30);
+    background: #fff;
+    box-shadow: 0 calc(var(--cc) * 6) 0 #ead7f4, inset 0 0 0 calc(var(--cc) * 3) #f3e6fa;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cc-item.is-selected {
+    box-shadow: 0 calc(var(--cc) * 6) 0 #e86aa6, inset 0 0 0 calc(var(--cc) * 6) var(--cc-pink);
+    transform: translateY(calc(var(--cc) * -3));
+}
+
+.cc-item-icon {
+    position: absolute;
+    inset: 12%;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+
+/* "No hat": a soft ring with a slash. */
+.cc-item-none .cc-item-icon {
+    inset: 28%;
+    border-radius: 50%;
+    border: calc(var(--cc) * 8) solid #e3d2f2;
+    background: linear-gradient(135deg, transparent 44%, #e3d2f2 44%, #e3d2f2 56%, transparent 56%);
+}
+
+.cc-check {
+    position: absolute;
+    right: -6%;
+    bottom: -6%;
+    width: 34%;
+    height: 34%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    opacity: 0;
+    transform: scale(0.4);
+    transition: opacity 0.15s, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+}
+
+.is-selected > .cc-check {
+    opacity: 1;
+    transform: none;
+}
+
+.cc-tone .cc-check {
+    width: 38%;
+    height: 38%;
+    right: -8%;
+    bottom: -8%;
+}
+
+/* Hair colours. */
+.cc-colors {
+    flex: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: calc(var(--cc) * 14);
+}
+
+.cc-color {
+    width: calc(var(--cc) * 66);
+    height: calc(var(--cc) * 66);
+    border-radius: 50%;
+    background: var(--cc-color);
+    box-shadow: 0 0 0 calc(var(--cc) * 5) #fff, 0 calc(var(--cc) * 5) 0 calc(var(--cc) * 4) #ead7f4;
+}
+
+.cc-color.is-selected {
+    box-shadow: 0 0 0 calc(var(--cc) * 6) var(--cc-pink), 0 calc(var(--cc) * 5) 0 calc(var(--cc) * 5) #e86aa6;
+}
+
+/* Outfit: which piece the grid shows. */
+.cc-chips {
+    flex: none;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: calc(var(--cc) * 10);
+}
+
+.cc-chip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--cc) * 8);
+    height: calc(var(--cc) * 72);
+    border-radius: calc(var(--cc) * 36);
+    background: #fff;
+    color: var(--cc-ink-soft);
+    box-shadow: 0 calc(var(--cc) * 5) 0 #ead7f4;
+}
+
+.cc-chip.is-active {
+    background: #ffe0ef;
+    color: #d6488e;
+    box-shadow: 0 calc(var(--cc) * 5) 0 #f3a9cc, inset 0 0 0 calc(var(--cc) * 4) var(--cc-pink);
+}
+
+.cc-chip-icon {
+    width: calc(var(--cc) * 38);
+    height: calc(var(--cc) * 38);
+    background: currentColor;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+}
+
+.cc-chip-label {
+    font-size: max(10px, calc(var(--cc) * 24));
+}
+
+/* ---- Name ---------------------------------------------------------------- */
+
+.cc-name-card {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--cc) * 26);
+}
+
+.cc-name {
+    color: #fff;
+    font-size: max(18px, calc(var(--cc) * 64));
+    line-height: 1.1;
+    text-align: center;
+    word-break: break-all;
+    --outline: #b55aa0;
+}
+
+.cc-name-actions {
+    display: flex;
+    gap: calc(var(--cc) * 16);
+}
+
+.cc-shuffle {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--cc) * 14);
+    height: calc(var(--cc) * 96);
+    padding: 0 calc(var(--cc) * 36) 0 calc(var(--cc) * 22);
+    border-radius: calc(var(--cc) * 48);
+    background: linear-gradient(#c9a8ff, #a77cf6);
+    box-shadow: inset 0 calc(var(--cc) * -6) 0 rgba(0, 0, 0, 0.1), 0 calc(var(--cc) * 6) 0 #8458d6;
+    color: #fff;
+    transition: transform 0.15s;
+}
+
+.cc-shuffle:active {
+    transform: translateY(calc(var(--cc) * 4));
+}
+
+.cc-shuffle-label {
+    font-size: max(13px, calc(var(--cc) * 36));
+    --outline: #7444c4;
+}
+
+/* The die on the shuffle button: a white tile with five pips. */
+.cc-dice {
+    position: relative;
+    width: calc(var(--cc) * 54);
+    height: calc(var(--cc) * 54);
+    border-radius: calc(var(--cc) * 14);
+    background: #fff;
+    transform: rotate(-12deg);
+}
+
+.cc-pip {
+    position: absolute;
+    width: 22%;
+    height: 22%;
+    border-radius: 50%;
+    background: #a77cf6;
+}
+
+.cc-pip:nth-child(1) { left: 16%; top: 16%; }
+.cc-pip:nth-child(2) { right: 16%; top: 16%; }
+.cc-pip:nth-child(3) { left: 39%; top: 39%; }
+.cc-pip:nth-child(4) { left: 16%; bottom: 16%; }
+.cc-pip:nth-child(5) { right: 16%; bottom: 16%; }
+
+/* Poki sign-in: the Poki blue, so it reads as Poki's own. */
+.cc-login {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(var(--cc) * 4);
+    padding: calc(var(--cc) * 18) calc(var(--cc) * 26);
+    border-radius: calc(var(--cc) * 34);
+    background: linear-gradient(#3aa6ff, #008cff);
+    box-shadow: inset 0 calc(var(--cc) * -6) 0 rgba(0, 0, 0, 0.1), 0 calc(var(--cc) * 6) 0 #0068c2;
+    color: #fff;
+}
+
+.cc-login-label {
+    font-size: max(13px, calc(var(--cc) * 34));
+    --outline: #005fb0;
+}
+
+.cc-login-note {
+    font-size: max(10px, calc(var(--cc) * 22));
+    opacity: 0.95;
+}
+
+/* ---- Next / Let's go ------------------------------------------------------ */
+
+.cc-actions {
+    flex: none;
+    display: flex;
+    gap: calc(var(--cc) * 18);
+}
+
+.cc-actions > .cc-next {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.cc-next {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: calc(var(--cc) * 110);
+    border-radius: calc(var(--cc) * 55);
+    background: linear-gradient(#ffa6d0, #ff7eb8);
+    box-shadow: inset 0 calc(var(--cc) * -7) 0 rgba(0, 0, 0, 0.1), 0 calc(var(--cc) * 7) 0 #e05c9d;
+    color: #fff;
+    transition: transform 0.15s;
+}
+
+.cc-next:active {
+    transform: translateY(calc(var(--cc) * 5));
+}
+
+.cc-next.cc-next-final {
+    background: linear-gradient(#8ff0c4, #4fd69c);
+    box-shadow: inset 0 calc(var(--cc) * -7) 0 rgba(0, 0, 0, 0.1), 0 calc(var(--cc) * 7) 0 #2fae78;
+}
+
+.cc-next-label {
+    font-size: max(15px, calc(var(--cc) * 44));
+    --outline: #c4467f;
+}
+
+.cc-next-final .cc-next-label {
+    --outline: #23915f;
+}
+
+/* Back to the pick: a round white button ahead of Next. */
+.cc-back {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: calc(var(--cc) * 110);
+    height: calc(var(--cc) * 110);
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: inset 0 calc(var(--cc) * -6) 0 rgba(0, 0, 0, 0.05), 0 calc(var(--cc) * 7) 0 #ead7f4;
+    color: var(--cc-ink-soft);
+    transition: transform 0.15s;
+}
+
+.cc-back:active {
+    transform: translateY(calc(var(--cc) * 5));
+}
+
+.cc-back-arrow {
+    width: calc(var(--cc) * 30);
+    height: calc(var(--cc) * 30);
+    margin-left: calc(var(--cc) * 12);
+    border-left: calc(var(--cc) * 9) solid currentColor;
+    border-bottom: calc(var(--cc) * 9) solid currentColor;
+    border-radius: calc(var(--cc) * 4);
+    transform: rotate(45deg);
+}
+
+/* ---- Pick (the first screen) -------------------------------------------
+   The girl and the boy stand side by side; under each, Cute / Cool plays as
+   that one at once and Customize opens the steps for them. SkinShop places
+   the kids over their buttons, which stand at the x it hands the view. */
+
+.cc-pick {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.cc-overlay:not([data-mode="pick"]) .cc-pick,
+.cc-overlay[data-mode="pick"] .cc-stage,
+.cc-overlay[data-mode="pick"] .cc-panel {
+    display: none;
+}
+
+/* The title, the name card and the Poki line, stacked at the top. */
+.cc-pick-head {
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    top: max(10px, calc(var(--cc) * 32));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: max(6px, calc(var(--cc) * 14));
+}
+
+.cc-pick-title {
+    text-align: center;
+    color: #fff;
+    font-size: max(22px, calc(var(--cc) * 68));
+    line-height: 1.1;
+    --outline: #c45a9a;
+}
+
+.cc-overlay .cc-pick-title.lui-outline {
+    --outline-width: max(2px, calc(var(--cc) * 5));
+}
+
+/* The name: a white bubble with the name and the die that rolls a new one. */
+.cc-pick-name {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--cc) * 22);
+    max-width: 100%;
+    min-height: max(44px, calc(var(--cc) * 104));
+    padding: calc(var(--cc) * 10) calc(var(--cc) * 12) calc(var(--cc) * 10) max(16px, calc(var(--cc) * 40));
+    border-radius: max(22px, calc(var(--cc) * 52));
+    background: #fff;
+    box-shadow: 0 calc(var(--cc) * 6) 0 #ead7f4, 0 calc(var(--cc) * 10) calc(var(--cc) * 20) rgba(90, 40, 120, 0.18);
+    pointer-events: auto;
+}
+
+/* Without the die (a Poki name), the name sits in the middle. */
+.cc-pick-name.is-poki {
+    padding-right: max(16px, calc(var(--cc) * 40));
+}
+
+.cc-pick-name-words {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+}
+
+.cc-pick-name-caption {
+    color: var(--cc-ink-soft);
+    font-size: max(10px, calc(var(--cc) * 24));
+    line-height: 1.1;
+}
+
+.cc-pick-name-text {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--cc-ink);
+    font-size: max(17px, calc(var(--cc) * 46));
+    line-height: 1.15;
+}
+
+.cc-pick-shuffle {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: max(40px, calc(var(--cc) * 84));
+    height: max(40px, calc(var(--cc) * 84));
+    border-radius: 34%;
+    background: linear-gradient(#c9a8ff, #a77cf6);
+    box-shadow: inset 0 calc(var(--cc) * -5) 0 rgba(0, 0, 0, 0.1), 0 calc(var(--cc) * 5) 0 #8458d6;
+    transition: transform 0.15s;
+}
+
+.cc-pick-shuffle:active {
+    transform: translateY(calc(var(--cc) * 4));
+}
+
+.cc-pick-shuffle .cc-dice {
+    width: 60%;
+    height: 60%;
+    border-radius: 26%;
+}
+
+.cc-pick-shuffle.is-rolling .cc-dice {
+    animation: cc-dice-roll 0.45s cubic-bezier(0.3, 1.4, 0.6, 1);
+}
+
+@keyframes cc-dice-roll {
+    0% { transform: rotate(-12deg) scale(1); }
+    45% { transform: rotate(200deg) scale(1.18); }
+    100% { transform: rotate(348deg) scale(1); }
+}
+
+/* Log in to Poki for your own name: a line, not a button. */
+.cc-pick-prompt {
+    max-width: 100%;
+    text-align: center;
+    color: #fff;
+    font-size: max(12px, calc(var(--cc) * 28));
+    line-height: 1.15;
+    --outline: #c45a9a;
+}
+
+/* Landscape phones: the title and the name share a row, so the kids keep
+   their height. */
+@media (max-height: 480px) and (min-aspect-ratio: 3/2) {
+    .cc-pick-head {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        column-gap: 18px;
+        row-gap: 4px;
+    }
+
+    .cc-pick-prompt {
+        flex: 1 0 100%;
+    }
+}
+
+.cc-pick-col {
+    position: absolute;
+    bottom: max(16px, calc(var(--cc) * 44));
+    transform: translateX(-50%);
+    pointer-events: auto;
+}
+
+.cc-pick-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(var(--cc) * 20);
+}
+
+.cc-pick-play {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--cc) * 18);
+    min-width: calc(var(--cc) * 320);
+    height: calc(var(--cc) * 124);
+    padding: 0 calc(var(--cc) * 44);
+    border-radius: calc(var(--cc) * 62);
+    background: linear-gradient(#8ff0c4, #4fd69c);
+    box-shadow:
+        inset 0 calc(var(--cc) * -8) 0 rgba(0, 0, 0, 0.1),
+        0 calc(var(--cc) * 8) 0 #2fae78,
+        0 calc(var(--cc) * 14) calc(var(--cc) * 26) rgba(40, 90, 70, 0.3);
+    color: #fff;
+    transition: transform 0.15s;
+}
+
+.cc-pick-play:active {
+    transform: translateY(calc(var(--cc) * 6));
+}
+
+.cc-pick-play-label {
+    font-size: max(18px, calc(var(--cc) * 56));
+    line-height: 1;
+    white-space: nowrap;
+    --outline: #23915f;
+}
+
+/* A white play triangle after the word. */
+.cc-pick-arrow {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: calc(var(--cc) * 20) 0 calc(var(--cc) * 20) calc(var(--cc) * 30);
+    border-color: transparent transparent transparent #fff;
+    filter: drop-shadow(0 calc(var(--cc) * 3) 0 #23915f);
+}
+
+.cc-pick-edit {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--cc) * 12);
+    height: calc(var(--cc) * 78);
+    padding: 0 calc(var(--cc) * 32) 0 calc(var(--cc) * 26);
+    border-radius: calc(var(--cc) * 39);
+    background: #fff;
+    box-shadow: 0 calc(var(--cc) * 6) 0 #ead7f4, 0 calc(var(--cc) * 10) calc(var(--cc) * 20) rgba(90, 40, 120, 0.18);
+    color: var(--cc-ink);
+    transition: transform 0.15s;
+}
+
+.cc-pick-edit:active {
+    transform: translateY(calc(var(--cc) * 4));
+}
+
+.cc-pick-edit-icon {
+    width: calc(var(--cc) * 40);
+    height: calc(var(--cc) * 40);
+    background: #d6488e;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+}
+
+.cc-pick-edit-label {
+    font-size: max(13px, calc(var(--cc) * 32));
+    white-space: nowrap;
+}

@@ -1,0 +1,437 @@
+/* The balloon build site's panel (BalloonProject.js + BalloonSiteView.js): a
+   window at the right of the screen, no backdrop, so the site stays in view.
+   The frame, title bar and close button are the backpack's (InventoryPanel.css,
+   --iv units); this file places the window and draws the progress and the
+   wood, stone and coin rows. */
+
+.bs-overlay {
+    background: none;
+    justify-content: flex-end;
+    /* Below the HUD's top row (the money stays in view), at the right. */
+    padding: calc(var(--hud, 1px) * 150) calc(var(--iv) * 40) calc(var(--iv) * 16) 0;
+}
+
+.lui-portrait .bs-overlay {
+    justify-content: center;
+    align-items: flex-end;
+    padding: 0 0 calc(var(--iv) * 40);
+}
+
+.bs-window {
+    position: relative;
+    width: calc(var(--iv) * 520);
+    margin-top: calc(var(--iv) * 50);
+}
+
+.lui-portrait .bs-window {
+    width: calc(var(--iv) * 860);
+}
+
+.bs-panel {
+    position: relative;
+    inset: auto;
+    gap: calc(var(--iv) * 10);
+    padding: calc(var(--iv) * 56) calc(var(--iv) * 26) calc(var(--iv) * 18);
+}
+
+.bs-title {
+    width: calc(var(--iv) * 440);
+}
+
+.bs-intro {
+    color: var(--iv-ink);
+    font-size: max(13px, calc(var(--iv) * 23));
+    text-align: center;
+    line-height: 1.15;
+}
+
+/* After giving, the thanks take the intro's place for a while. */
+.bs-intro.bs-thanks {
+    color: #2fa05a;
+}
+
+/* ---- Everyone's progress ---------------------------------------------- */
+
+.bs-total {
+    position: relative;
+    height: max(20px, calc(var(--iv) * 42));
+    border-radius: 99px;
+    background: #f1e7ff;
+    box-shadow: inset 0 calc(var(--iv) * 3) 0 rgba(120, 80, 160, 0.15);
+    overflow: hidden;
+}
+
+.bs-total-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #ff9ccc, #c9a0ff);
+    transition: width 0.6s ease-out;
+}
+
+.bs-total-text {
+    --outline: #8a4fb0;
+    --outline-width: max(1px, calc(var(--iv) * 3));
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #ffffff;
+    font-size: max(13px, calc(var(--iv) * 28));
+}
+
+.bs-done .bs-total-fill {
+    background: linear-gradient(90deg, #7ce0a6, #5fd393);
+}
+
+/* ---- Wood, stone, coins ----------------------------------------------- */
+
+.bs-rows {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--iv) * 8);
+}
+
+.bs-row {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--iv) * 14);
+    padding: calc(var(--iv) * 8) calc(var(--iv) * 16);
+    border-radius: calc(var(--iv) * 26);
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 calc(var(--iv) * 4) 0 #f3dcec;
+}
+
+.bs-icon {
+    flex: none;
+    width: calc(var(--iv) * 62);
+    height: calc(var(--iv) * 62);
+}
+
+.bs-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--iv) * 4);
+}
+
+.bs-head,
+.bs-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: calc(var(--iv) * 10);
+}
+
+.bs-name {
+    color: var(--iv-ink);
+    font-size: max(13px, calc(var(--iv) * 27));
+}
+
+.bs-count {
+    color: var(--iv-ink-soft);
+    font-size: max(11px, calc(var(--iv) * 22));
+    white-space: nowrap;
+}
+
+.bs-bar {
+    display: block;
+    height: max(7px, calc(var(--iv) * 14));
+    border-radius: 99px;
+    background: #f1e7ff;
+    overflow: hidden;
+}
+
+.bs-fill {
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #ffb36b, #ff8fc4);
+    transition: width 0.6s ease-out;
+}
+
+.bs-full .bs-fill {
+    background: linear-gradient(90deg, #7ce0a6, #5fd393);
+}
+
+.bs-have {
+    color: var(--iv-ink-soft);
+    font-size: max(11px, calc(var(--iv) * 22));
+    white-space: nowrap;
+}
+
+.bs-buttons {
+    display: flex;
+    gap: calc(var(--iv) * 8);
+}
+
+.bs-give {
+    min-width: calc(var(--iv) * 112);
+    height: max(28px, calc(var(--iv) * 52));
+    padding: 0 calc(var(--iv) * 18);
+    background-size: 100% 100%;
+    color: #ffffff;
+    font-size: max(12px, calc(var(--iv) * 24));
+    text-align: center;
+    white-space: nowrap;
+    text-shadow: 0 calc(var(--iv) * 2) 0 rgba(0, 0, 0, 0.25);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.bs-give:active {
+    transform: scale(0.92);
+}
+
+.bs-give:disabled {
+    filter: grayscale(1);
+    opacity: 0.5;
+}
+
+.bs-busy .bs-give {
+    pointer-events: none;
+}
+
+/* ---- Theirs in all ---------------------------------------------------- */
+
+.bs-gave {
+    color: var(--iv-ink-soft);
+    font-size: max(11px, calc(var(--iv) * 21));
+    text-align: center;
+}
+
+/* ---- Two pages: giving, and the builders' ranking (the trophy) -------- */
+
+/* Both pages sit in the one cell, so the window keeps the giving page's size
+   on the ranking page too (no jump on the trophy): the hidden one still takes
+   its room, and the ranking's list fills what is left. */
+.bs-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.bs-page {
+    grid-area: 1 / 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--iv) * 10);
+}
+
+.bs-rank-page,
+.bs-ranking .bs-give-page {
+    visibility: hidden;
+}
+
+.bs-ranking .bs-rank-page {
+    visibility: visible;
+}
+
+/* The trophy: beside the window, outside its left side just under the title
+   (the user's spot, 2026-11-04). Upright phones have no room there (the window
+   spans the screen): at its top-left corner instead, as the close button is
+   at its right. Brighter while the ranking is open. */
+.bs-trophy {
+    position: absolute;
+    top: calc(var(--iv) * 96);
+    right: calc(100% + var(--iv) * 14);
+    width: max(40px, calc(var(--iv) * 112));
+    height: max(40px, calc(var(--iv) * 112));
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease-out;
+    z-index: 3;
+}
+
+.lui-portrait .bs-trophy {
+    top: calc(var(--iv) * -44);
+    right: auto;
+    left: calc(var(--iv) * -44);
+}
+
+.bs-trophy-on {
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 calc(var(--iv) * 10) #ffe27a);
+}
+
+@media (hover: hover) {
+    .bs-trophy:hover { transform: scale(1.15); }
+}
+
+.bs-trophy:active {
+    transform: scale(0.88);
+    transition-duration: 0.1s;
+}
+
+.bs-rank-builders {
+    color: var(--iv-ink);
+    font-size: max(12px, calc(var(--iv) * 22));
+    text-align: center;
+}
+
+/* The top ten scroll inside the window, so it keeps the giving page's size. */
+.bs-rank-list {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--iv) * 6);
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: #e2cdf5 transparent;
+    margin: 0 calc(var(--iv) * -10) 0 calc(var(--iv) * -4);
+    padding: calc(var(--iv) * 2) calc(var(--iv) * 10) calc(var(--iv) * 6) calc(var(--iv) * 4);
+}
+
+.bs-rank-row {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--iv) * 12);
+    min-height: calc(var(--iv) * 64);
+    padding: calc(var(--iv) * 6) calc(var(--iv) * 18) calc(var(--iv) * 6) calc(var(--iv) * 10);
+    border-radius: calc(var(--iv) * 24);
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 calc(var(--iv) * 4) 0 #f3dcec;
+}
+
+.bs-rank-you {
+    background: #fff6d2;
+    box-shadow: 0 calc(var(--iv) * 4) 0 #f5d77a, inset 0 0 0 calc(var(--iv) * 3) #ffd24d;
+}
+
+.bs-rank-badge {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: calc(var(--iv) * 56);
+    height: calc(var(--iv) * 48);
+    padding: 0 calc(var(--iv) * 10);
+    border-radius: 99px;
+    background: #efe3ff;
+    color: var(--iv-ink);
+    font-size: max(11px, calc(var(--iv) * 21));
+    white-space: nowrap;
+}
+
+/* The first three wear their medal (rank_1..3, 109 x 112) as drawn. */
+.bs-rank-medal {
+    min-width: 0;
+    width: calc(var(--iv) * 56);
+    height: calc(var(--iv) * 57.5);
+    padding: 0;
+    border-radius: 0;
+    background-color: transparent;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.bs-rank-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--iv) * 3);
+}
+
+.bs-rank-name {
+    color: var(--iv-ink);
+    font-size: max(12px, calc(var(--iv) * 24));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bs-rank-gave {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(var(--iv) * 2) calc(var(--iv) * 12);
+    color: var(--iv-ink-soft);
+    font-size: max(10px, calc(var(--iv) * 19));
+}
+
+.bs-rank-part {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--iv) * 4);
+    white-space: nowrap;
+}
+
+.bs-rank-icon {
+    flex: none;
+    width: calc(var(--iv) * 26);
+    height: calc(var(--iv) * 26);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.bs-rank-score {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.05;
+}
+
+.bs-rank-score b {
+    color: #8a4fb0;
+    font-size: max(13px, calc(var(--iv) * 27));
+    font-weight: normal;
+}
+
+.bs-rank-score small {
+    color: var(--iv-ink-soft);
+    font-size: max(9px, calc(var(--iv) * 16));
+}
+
+/* Their own place, under the top ten, after a dotted gap. */
+.bs-rank-mine::before {
+    content: '';
+    display: block;
+    margin: calc(var(--iv) * 2) calc(var(--iv) * 30) calc(var(--iv) * 10);
+    border-top: calc(var(--iv) * 4) dotted #e2cdf5;
+}
+
+/* Under the list ("give something to join"); while loading, or with no one
+   yet, it takes the list's room, in its middle. */
+.bs-rank-note {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--iv-ink-soft);
+    font-size: max(11px, calc(var(--iv) * 21));
+    text-align: center;
+    padding: calc(var(--iv) * 10) 0;
+}
+
+.bs-rank-list[hidden] + .bs-rank-note {
+    flex: 1 1 0;
+}
+
+/* The blue button art (180 x 85) at its own shape. */
+.bs-rank-back {
+    align-self: center;
+    height: max(28px, calc(var(--iv) * 54));
+    width: calc(max(28px, calc(var(--iv) * 54)) * 180 / 85);
+    background-size: 100% 100%;
+    color: #ffffff;
+    font-size: max(12px, calc(var(--iv) * 22));
+    text-align: center;
+    white-space: nowrap;
+    text-shadow: 0 calc(var(--iv) * 2) 0 rgba(0, 0, 0, 0.25);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.bs-rank-back:active {
+    transform: scale(0.92);
+}
